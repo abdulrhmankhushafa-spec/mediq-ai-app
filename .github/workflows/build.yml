@@ -27,25 +27,20 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Full Flutter Project & Inject UI
+      - name: Create Flutter Project & Inject Code
         run: |
           flutter create --org com.mediq.ai --project-name mediq_ai app_build
           cp main.dart app_build/lib/main.dart
-          sed -i 's/Monitor_heart_rounded/monitor_heart_rounded/g' app_build/lib/main.dart
+          sed -i 's/Sync_alt_rounded/sync_alt_rounded/g' app_build/lib/main.dart
+          sed -i 's/android:label="mediq_ai"/android:label="MEDIQ AI"/g' app_build/android/app/src/main/AndroidManifest.xml
 
       - name: Build Release APK
         working-directory: app_build
         run: flutter build apk --release
 
-      - name: Upload APK to Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: MEDIQ-AI-APK
-          path: app_build/build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Publish APK to Releases (Direct Download)
+      - name: Publish APK to Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "MEDIQ AI Build #${{ github.run_number }}"
+          tag_name: v1.1.${{ github.run_number }}
+          name: "MEDIQ AI Interactive v1.1.${{ github.run_number }}"
           files: app_build/build/app/outputs/flutter-apk/app-release.apk
