@@ -9,12 +9,12 @@ void main() {
 }
 
 // ============================================================================
-// 1. مدير الحالة والعمليات الخلفية المبدئية (App Backend Controller)
+// 1. مدير الحالة والعمليات الخلفية (App Backend & State)
 // ============================================================================
 class AppController extends ChangeNotifier {
   bool isDarkMode = false;
   String language = 'العربية';
-  String fontSizeLabel = 'متوسط'; // صغير، متوسط، كبير
+  String fontSizeLabel = 'متوسط';
   bool saveChats = true;
   bool notificationsEnabled = true;
   bool isLocalServerConnected = true;
@@ -26,12 +26,9 @@ class AppController extends ChangeNotifier {
 
   double get fontScale {
     switch (fontSizeLabel) {
-      case 'صغير':
-        return 0.88;
-      case 'كبير':
-        return 1.15;
-      default:
-        return 1.0;
+      case 'صغير': return 0.88;
+      case 'كبير': return 1.15;
+      default: return 1.0;
     }
   }
 
@@ -41,97 +38,52 @@ class AppController extends ChangeNotifier {
       'title': 'معلومات عن السكري',
       'subtitle': 'السكري هو اضطراب في استقلاب الجلوكوز...',
       'time': 'اليوم 09:24',
-      'icon': Icons.water_drop_outlined,
+      'icon': Icons.water_drop_rounded,
       'isFavorite': true,
       'question': 'ما هي أعراض مرض السكري؟',
-      'answerIntro':
-          'مرض السكري هو اضطراب في استقلاب الجلوكوز في الجسم، ويؤدي إلى ارتفاع مستوى السكر في الدم. من أبرز أعراضه:',
+      'answerIntro': 'مرض السكري هو اضطراب في استقلاب الجلوكوز في الجسم، ويؤدي إلى ارتفاع مستوى السكر في الدم. من أبرز أعراضه:',
       'bullets': [
-        'زيادة العطش وجفاف الفم.',
-        'كثرة التبول خاصة في الليل.',
-        'الجوع المستمر رغم تناول الطعام.',
-        'فقدان الوزن غير المبرر.',
-        'التعب والإرهاق العام.',
-        'تشوش الرؤية وبطء التئام الجروح.',
+        'زيادة العطش وجفاف الفم المستمر.',
+        'كثرة التبول خاصة خلال ساعات الليل.',
+        'الجوع الشديد رغم تناول وجبات طعام كافية.',
+        'فقدان الوزن غير المبرر وبدون حمية.',
+        'الإرهاق العام وتشوش الرؤية المؤقت.',
       ],
-      'footer':
-          'من المهم ملاحظة أن هذه الأعراض قد تختلف من شخص لآخر، ويجب استشارة الطبيب وإجراء فحص السكر التراكمي (HbA1c) للتشخيص الدقيق.',
+      'footer': 'من المهم استشارة الطبيب وإجراء فحص السكر التراكمي (HbA1c) للتشخيص الدقيق.',
     },
     {
       'id': 'gastritis',
       'title': 'أعراض التهاب المعدة',
-      'subtitle': 'التهاب المعدة قد يسبب ألماً في الجزء العلوي...',
+      'subtitle': 'التهاب المعدة يسبب ألماً في الجزء العلوي...',
       'time': 'أمس 16:45',
-      'icon': Icons.medical_information_outlined,
+      'icon': Icons.medical_information_rounded,
       'isFavorite': false,
       'question': 'ما هي أسباب التهاب المعدة؟',
-      'answerIntro': 'التهاب المعدة يمكن أن يحدث نتيجة عدة أسباب، من أبرزها:',
+      'answerIntro': 'التهاب المعدة يمكن أن يحدث نتيجة عدة عوامل أساسية، منها:',
       'bullets': [
-        '1. العدوى البكتيرية (مثل جرثومة المعدة هيليكوباكتر بيلوري).',
-        '2. الاستخدام المفرط للأدوية المسكنة والمضادة للالتهاب مثل الإيبوبروفين.',
-        '3. التوتر العصبي والضغط النفسي الشديد.',
+        '1. العدوى بجرثومة المعدة (هيليكوباكتر بيلوري).',
+        '2. الإفراط في تناول المسكنات ومضادات الالتهاب.',
+        '3. الضغط النفسي الشديد والتوتر العصبي.',
         '4. تناول الأطعمة الحارة أو الدهنية بكثرة.',
-        '5. الإفراط في شرب الكافيين أو التدخين.',
-        '6. بعض الحالات الطبية المناعية الأخرى.',
       ],
-      'footer': 'للحصول على تشخيص دقيق، من الأفضل مراجعة الطبيب المختص.',
+      'footer': 'للحصول على تشخيص دقيق ووصفة علاجية، يرجى مراجعة الطبيب المختص.',
     },
     {
       'id': 'anemia',
       'title': 'أعراض فقر الدم (الأنيميا)',
       'subtitle': 'التعب والإرهاق المستمر وشحوب الجلد...',
       'time': 'أمس 10:25',
-      'icon': Icons.bloodtype_outlined,
+      'icon': Icons.bloodtype_rounded,
       'isFavorite': true,
       'question': 'ما هي أعراض فقر الدم؟',
-      'answerIntro':
-          'أعراض فقر الدم (الأنيميا) تختلف من شخص لآخر حسب السبب وشدة الحالة، ولكن بشكل عام تشمل الأعراض الأكثر شيوعاً ما يلي:',
+      'answerIntro': 'أعراض فقر الدم تختلف حسب الشدة، ولكن تشمل الشائع منها:',
       'bullets': [
-        'التعب والإرهاق المستمر والضعف العام.',
-        'شحوب الجلد، خاصة في الوجه والشفاه.',
-        'الدوخة أو الشعور بالدوار والصداع المتكرر.',
-        'تساقط الشعر وتقصف الأظافر وبرودة الأطراف.',
-        'ضيق في التنفس وخفقان القلب عند بذل مجهود بسيط.',
+        'التعب المستمر وضعف عام في النشاط البدني.',
+        'شحوب ملاحظ في الوجه والشفاه والأظافر.',
+        'الدوخة والشعور بالدوار المتكرر والصداع.',
+        'برودة الأطراف وخفقان القلب مع أقل مجهود.',
       ],
-      'footer':
-          'مهم: هذه الأعراض قد تكون مشابهة لأمراض أخرى، ولا يمكن تشخيص فقر الدم بدون فحوصات طبية وتحاليل دم مثل صورة الدم الكاملة (CBC) ومستوى الفيريتين.',
-    },
-    {
-      'id': 'vitamind',
-      'title': 'فيتامين D وأهميته',
-      'subtitle': 'فيتامين D مهم لصحة العظام والمناعة...',
-      'time': 'أمس 12:30',
-      'icon': Icons.wb_sunny_outlined,
-      'isFavorite': false,
-      'question': 'ما فائدة فيتامين D للجسم؟',
-      'answerIntro':
-          'فيتامين D يلعب دوراً حيوياً في الحفاظ على صحة الجسم، ومن أهم فوائده:',
-      'bullets': [
-        'تعزيز امتصاص الكالسيوم والفوسفور لبناء العظام والأسنان.',
-        'دعم وتقوية الجهاز المناعي لمقاومة العدوى.',
-        'تحسين الحالة المزاجية والوقاية من الخمول والاكتئاب.',
-        'الحفاظ على صحة العضلات والأعصاب.',
-      ],
-      'footer':
-          'يُنصح بالتعرض المعتدل لأشعة الشمس وفحص مستوى الفيتامين قبل تناول المكملات.',
-    },
-    {
-      'id': 'general',
-      'title': 'أسئلة عامة في الطب',
-      'subtitle': 'يمكن أن تتضمن الأسئلة مجالات المناعة والوقاية...',
-      'time': 'السبت 20:15',
-      'icon': Icons.assignment_outlined,
-      'isFavorite': false,
-      'question': 'كيف يعمل الجهاز المناعي؟',
-      'answerIntro':
-          'الجهاز المناعي هو شبكة معقدة من الخلايا والأنسجة والأعضاء التي تعمل معاً للدفاع عن الجسم:',
-      'bullets': [
-        'خط الدفاع الأول: الجلد والأغشية المخاطية لمنع دخول الميكروبات.',
-        'المناعة الفطرية: استجابة سريعة فورية ضد أي جسم غريب.',
-        'المناعة المكتسبة: تنتج أجساماً مضادة مخصصة للقضاء على الفيروسات والبكتيريا.',
-      ],
-      'footer':
-          'النوم الجيد والتغذية المتوازنة يساعدان في الحفاظ على كفاءة جهازك المناعي.',
+      'footer': 'يتم تأخيص فقر الدم بدقة عبر تحليل صورة الدم الكاملة (CBC) وفحص المخزون.',
     },
   ];
 
@@ -139,136 +91,59 @@ class AppController extends ChangeNotifier {
     return chats.where((chat) {
       final matchesSearch = searchQuery.isEmpty ||
           chat['title'].toString().contains(searchQuery) ||
-          chat['subtitle'].toString().contains(searchQuery) ||
-          chat['question'].toString().contains(searchQuery);
+          chat['subtitle'].toString().contains(searchQuery);
       final matchesFav = !showFavoritesOnly || (chat['isFavorite'] == true);
       return matchesSearch && matchesFav;
     }).toList();
   }
 
-  void toggleTheme() {
-    isDarkMode = !isDarkMode;
-    notifyListeners();
-  }
-
+  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
   void cycleFontSize() {
-    if (fontSizeLabel == 'صغير') {
-      fontSizeLabel = 'متوسط';
-    } else if (fontSizeLabel == 'متوسط') {
-      fontSizeLabel = 'كبير';
-    } else {
-      fontSizeLabel = 'صغير';
-    }
+    fontSizeLabel = fontSizeLabel == 'صغير' ? 'متوسط' : fontSizeLabel == 'متوسط' ? 'كبير' : 'صغير';
     notifyListeners();
   }
-
   void cycleModel() {
-    const models = ['Llama 3.1 (8B)', 'Meditron (7B)', 'BioMistral (7B)'];
-    final nextIndex = (models.indexOf(selectedModel) + 1) % models.length;
-    selectedModel = models[nextIndex];
+    selectedModel = selectedModel.contains('3.1') ? 'Meditron (7B)' : 'Llama 3.1 (8B)';
     notifyListeners();
   }
-
-  void toggleServerStatus() {
-    isLocalServerConnected = !isLocalServerConnected;
-    notifyListeners();
-  }
-
-  void toggleSaveChats() {
-    saveChats = !saveChats;
-    notifyListeners();
-  }
-
-  void toggleNotifications() {
-    notificationsEnabled = !notificationsEnabled;
-    notifyListeners();
-  }
-
+  void toggleServerStatus() { isLocalServerConnected = !isLocalServerConnected; notifyListeners(); }
+  void toggleSaveChats() { saveChats = !saveChats; notifyListeners(); }
+  void toggleNotifications() { notificationsEnabled = !notificationsEnabled; notifyListeners(); }
   void toggleFavorite(String id) {
-    final index = chats.indexWhere((c) => c['id'] == id);
-    if (index != -1) {
-      chats[index]['isFavorite'] = !(chats[index]['isFavorite'] ?? false);
+    final idx = chats.indexWhere((c) => c['id'] == id);
+    if (idx != -1) {
+      chats[idx]['isFavorite'] = !(chats[idx]['isFavorite'] ?? false);
       notifyListeners();
     }
   }
+  void setSearchQuery(q) { searchQuery = q; notifyListeners(); }
+  void setShowFavoritesOnly(v) { showFavoritesOnly = v; notifyListeners(); }
+  void updateUserProfile(n, h) { if(n.isNotEmpty) userName=n; if(h.isNotEmpty) userHandle=h; notifyListeners(); }
 
-  void deleteChat(String id) {
-    chats.removeWhere((c) => c['id'] == id);
-    notifyListeners();
-  }
-
-  void setSearchQuery(String query) {
-    searchQuery = query;
-    notifyListeners();
-  }
-
-  void setShowFavoritesOnly(bool val) {
-    showFavoritesOnly = val;
-    notifyListeners();
-  }
-
-  void updateUserProfile(String name, String handle) {
-    if (name.trim().isNotEmpty) userName = name.trim();
-    if (handle.trim().isNotEmpty) userHandle = handle.trim();
-    notifyListeners();
-  }
-
-  // توليد رد طبي ذكي وحفظ المحادثة
-  Map<String, dynamic> generateMedicalReply(String question) {
-    String intro =
-        'بناءً على قاعدة البيانات الطبية المحلية (${selectedModel})، إليك المعلومات المتعلقة بسؤالك حول "$question":';
-    List<String> bullets = [
-      'تقييم الأعراض الأولية ومراقبة توقيت ظهورها وشدتها.',
-      'الحفاظ على شرب كميات كافية من الماء والراحة الجسدية.',
-      'تجنب تناول أي أدوية أو مضادات حيوية دون وصفة طبية.',
-      'مراجعة التاريخ الصحي وإجراء الفحوصات المخبرية اللازمة عند الحاجة.',
-    ];
-    String footer =
-        'تنويه: هذه المعلومات إرشادية للتثقيف الطبي فقط ولا تغني عن الفحص السريري لدى الطبيب المختص.';
-
-    if (question.contains('ضغط')) {
-      intro =
-          'ارتفاع ضغط الدم غالباً ما يكون بدون أعراض واضحة (القاتل الصامت)، ولكن عند ارتفاعه بشدة قد يظهر الآتي:';
-      bullets = [
-        'صداع شديد خاصة في مؤخرة الرأس صباحاً.',
-        'دوخة وتشوش في الرؤية أو طنين في الأذن.',
-        'ألم في الصدر أو ضيق في التنفس.',
-        'ينصح بتقليل الملح وممارسة المشي وقياس الضغط بانتظام.',
-      ];
-    } else if (question.contains('صداع')) {
-      intro = 'الصداع له أنواع متعددة منها التوتري والشقيقة (النصفي)، ومن أهم أسبابه وطرق التعامل معه:';
-      bullets = [
-        'الجفاف وقلة شرب الماء أو قلة النوم.',
-        'إجهاد العين بسبب الشاشات أو التوتر النفسي.',
-        'الراحة في غرفة هادئة ومظلمة وتناول السوائل الدافئة.',
-      ];
-    }
-
-    final newChat = {
+  Map<String, dynamic> generateReply(String q) {
+    return {
       'id': 'chat_${DateTime.now().millisecondsSinceEpoch}',
-      'title': question.length > 25 ? '${question.substring(0, 25)}...' : question,
-      'subtitle': intro,
+      'title': q.length > 25 ? '${q.substring(0, 25)}...' : q,
+      'subtitle': 'إجابة تحليلية من المساعد الطبي المحلي...',
       'time': 'الآن',
-      'icon': Icons.health_and_safety_outlined,
+      'icon': Icons.health_and_safety_rounded,
       'isFavorite': false,
-      'question': question,
-      'answerIntro': intro,
-      'bullets': bullets,
-      'footer': footer,
+      'question': q,
+      'answerIntro': 'بناءً على المعطيات الطبية لنموذج ($selectedModel) حول "$q":',
+      'bullets': [
+        'مراقبة الأعراض والراحة التامة للجسد.',
+        'الإكثار من السوائل والعصائر الطبيعية.',
+        'استشارة الطبيب فوراً في حال استمرار الأعراض.',
+      ],
+      'footer': 'تنبيه: هذه المعلومات تثقيفية ولا تغني عن استشارة الطبيب.',
     };
-
-    if (saveChats) {
-      chats.insert(0, newChat);
-      notifyListeners();
-    }
-    return newChat;
   }
 }
 
 final AppController appController = AppController();
 
 // ============================================================================
-// 2. التطبيق الرئيسي ودعم الثيم (الفاتح / الداكن) وتحجيم الخط
+// 2. تطبيق المادة والثيمات الفاخرة
 // ============================================================================
 class MediqAiApp extends StatelessWidget {
   const MediqAiApp({super.key});
@@ -286,11 +161,11 @@ class MediqAiApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFF2F6FA),
-            primaryColor: const Color(0xFF0078D4),
+            scaffoldBackgroundColor: const Color(0xFFF4F7FC),
+            primaryColor: const Color(0xFF0066CC),
             cardColor: Colors.white,
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0078D4),
+              primary: Color(0xFF0066CC),
               secondary: Color(0xFF00C6FF),
               surface: Colors.white,
             ),
@@ -298,26 +173,24 @@ class MediqAiApp extends StatelessWidget {
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF071524),
-            primaryColor: const Color(0xFF00B4DB),
-            cardColor: const Color(0xFF0E2238),
+            scaffoldBackgroundColor: const Color(0xFF040E18),
+            primaryColor: const Color(0xFF00A8FF),
+            cardColor: const Color(0xFF0B1D30),
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF00B4DB),
+              primary: Color(0xFF00A8FF),
               secondary: Color(0xFF00E1FF),
-              surface: Color(0xFF0E2238),
+              surface: Color(0xFF0B1D30),
             ),
           ),
-          builder: (context, child) {
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: TextScaler.linear(appController.fontScale),
-                ),
-                child: child!,
+          builder: (context, child) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(appController.fontScale),
               ),
-            );
-          },
+              child: child!,
+            ),
+          ),
           home: const SplashScreen(),
         );
       },
@@ -326,32 +199,53 @@ class MediqAiApp extends StatelessWidget {
 }
 
 // ============================================================================
-// 3. الرسومات الهندسية المخصصة (الشعار الطبي + النبض المتحرك + الخلفية)
+// 3. رسومات الأشكال والشعارات الاحترافية (Custom Painters)
 // ============================================================================
 class MediqLogo extends StatelessWidget {
   final double size;
   final bool showText;
-  final bool forceDarkText;
+  final bool forceDark;
 
-  const MediqLogo({
-    super.key,
-    this.size = 44,
-    this.showText = true,
-    this.forceDarkText = false,
-  });
+  const MediqLogo({super.key, this.size = 42, this.showText = true, this.forceDark = false});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = forceDarkText || Theme.of(context).brightness == Brightness.dark;
-
+    final isDark = forceDark || Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
+        Container(
           width: size,
           height: size,
-          child: CustomPaint(
-            painter: MediqShieldPainter(),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(size * 0.28),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF00E1FF), Color(0xFF0055CC)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00C6FF).withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(Icons.psychology_alt_rounded, color: Colors.white.withOpacity(0.25), size: size * 0.75),
+              Container(
+                width: size * 0.52,
+                height: size * 0.52,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF061526),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.add_rounded, color: Colors.white, size: size * 0.35),
+              ),
+            ],
           ),
         ),
         if (showText) ...[
@@ -362,32 +256,16 @@ class MediqLogo extends StatelessWidget {
             children: [
               RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: size * 0.42,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.8,
-                  ),
+                  style: TextStyle(fontSize: size * 0.42, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                   children: [
-                    TextSpan(
-                      text: 'MEDIQ ',
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF071A2C),
-                      ),
-                    ),
-                    const TextSpan(
-                      text: 'AI',
-                      style: TextStyle(color: Color(0xFF00C6FF)),
-                    ),
+                    TextSpan(text: 'MEDIQ ', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF061526))),
+                    const TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF00C6FF))),
                   ],
                 ),
               ),
               Text(
                 'مساعدك الطبي الذكي',
-                style: TextStyle(
-                  fontSize: size * 0.25,
-                  color: isDark ? Colors.white70 : const Color(0xFF5A7184),
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: size * 0.24, color: isDark ? Colors.white70 : const Color(0xFF5A7184), fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -397,117 +275,26 @@ class MediqLogo extends StatelessWidget {
   }
 }
 
-// رسام الشعار الاحترافي (حاوية بأجنحة متدرجة + الدماغ الإلكتروني + الصليب الطبي)
-class MediqShieldPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // توهج خلفي
-    final shadowPaint = Paint()
-      ..color = const Color(0xFF00C6FF).withOpacity(0.35)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.08, h * 0.12, w * 0.84, h * 0.82),
-        Radius.circular(w * 0.28),
-      ),
-      shadowPaint,
-    );
-
-    // الخلفية المتدرجة (شكل حرف M / الدرع الطبي)
-    final bgPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF00E5FF), Color(0xFF0078D4), Color(0xFF004BA0)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ).createShader(Rect.fromLTWH(0, 0, w, h));
-
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(w * 0.04, h * 0.04, w * 0.92, h * 0.92),
-      Radius.circular(w * 0.28),
-    );
-    canvas.drawRRect(rrect, bgPaint);
-
-    // خطوط الدوائر الذكية (Circuit nodes)
-    final nodePaint = Paint()
-      ..color = Colors.white.withOpacity(0.45)
-      ..strokeWidth = w * 0.03
-      ..style = PaintingStyle.stroke;
-    canvas.drawArc(
-      Rect.fromCircle(center: Offset(w / 2, h / 2), radius: w * 0.34),
-      -math.pi * 0.8,
-      math.pi * 1.3,
-      false,
-      nodePaint,
-    );
-
-    // الدائرة الداكنة الوسطى
-    final innerCirclePaint = Paint()..color = const Color(0xFF061A2E);
-    canvas.drawCircle(Offset(w / 2, h / 2), w * 0.27, innerCirclePaint);
-
-    // علامة (+) الطبية البيضاء في المنتصف
-    final crossPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    final cw = w * 0.11;
-    final cl = w * 0.30;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(w / 2, h / 2), width: cl, height: cw),
-        Radius.circular(cw * 0.3),
-      ),
-      crossPaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(w / 2, h / 2), width: cw, height: cl),
-        Radius.circular(cw * 0.3),
-      ),
-      crossPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// موجة تخطيط القلب المتحركة (Animated ECG Wave)
+// موجة نبض القلب المتحركة
 class AnimatedEcgWave extends StatefulWidget {
   final double width;
   final double height;
   final Color color;
-
-  const AnimatedEcgWave({
-    super.key,
-    this.width = 220,
-    this.height = 45,
-    this.color = const Color(0xFF00E1FF),
-  });
+  const AnimatedEcgWave({super.key, this.width = 220, this.height = 45, this.color = const Color(0xFF00E1FF)});
 
   @override
   State<AnimatedEcgWave> createState() => _AnimatedEcgWaveState();
 }
 
-class _AnimatedEcgWaveState extends State<AnimatedEcgWave>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
+class _AnimatedEcgWaveState extends State<AnimatedEcgWave> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
   }
-
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -515,109 +302,48 @@ class _AnimatedEcgWaveState extends State<AnimatedEcgWave>
       width: widget.width,
       height: widget.height,
       child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          return CustomPaint(
-            painter: EcgLinePainter(
-              progress: _controller.value,
-              color: widget.color,
-            ),
-          );
-        },
+        animation: _ctrl,
+        builder: (_, __) => CustomPainter(painter: EcgPainter(progress: _ctrl.value, color: widget.color)),
       ),
     );
   }
 }
 
-class EcgLinePainter extends CustomPainter {
+class EcgPainter extends CustomPainter {
   final double progress;
   final Color color;
-
-  EcgLinePainter({required this.progress, required this.color});
+  EcgPainter({required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final basePaint = Paint()
-      ..color = color.withOpacity(0.25)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    final glowPaint = Paint()
-      ..color = color
-      ..strokeWidth = 2.6
-      ..style = PaintingStyle.stroke;
+    final paintBase = Paint()..color = color.withOpacity(0.2)..strokeWidth = 2..style = PaintingStyle.stroke;
+    final paintGlow = Paint()..color = color..strokeWidth = 2.5..style = PaintingStyle.stroke;
 
     final path = Path();
-    final midY = size.height / 2;
-    path.moveTo(0, midY);
-    path.lineTo(size.width * 0.30, midY);
-    path.lineTo(size.width * 0.36, midY - 7);
-    path.lineTo(size.width * 0.41, midY + 7);
-    path.lineTo(size.width * 0.46, midY - 22);
-    path.lineTo(size.width * 0.51, midY + 18);
-    path.lineTo(size.width * 0.56, midY - 10);
-    path.lineTo(size.width * 0.62, midY);
-    path.lineTo(size.width, midY);
+    final mid = size.height / 2;
+    path.moveTo(0, mid);
+    path.lineTo(size.width * 0.3, mid);
+    path.lineTo(size.width * 0.36, mid - 6);
+    path.lineTo(size.width * 0.41, mid + 6);
+    path.lineTo(size.width * 0.46, mid - 24);
+    path.lineTo(size.width * 0.51, mid + 20);
+    path.lineTo(size.width * 0.57, mid - 8);
+    path.lineTo(size.width * 0.63, mid);
+    path.lineTo(size.width, mid);
 
-    canvas.drawPath(path, basePaint);
-
-    final metrics = path.computeMetrics().first;
-    final extractLength = metrics.length * 0.35;
-    final start = (metrics.length * progress) - (extractLength / 2);
-    final extracted = metrics.extractPath(
-      math.max(0, start),
-      math.min(metrics.length, start + extractLength),
-    );
-    canvas.drawPath(extracted, glowPaint);
+    canvas.drawPath(path, paintBase);
+    final metric = path.computeMetrics().first;
+    final len = metric.length * 0.35;
+    final start = (metric.length * progress) - (len / 2);
+    final extract = metric.extractPath(math.max(0, start), math.min(metric.length, start + len));
+    canvas.drawPath(extract, paintGlow);
   }
-
   @override
-  bool shouldRepaint(covariant EcgLinePainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}
-
-// خلفية الأشكال السداسية والسماعة الطبية التجميلية
-class MedicalPatternPainter extends CustomPainter {
-  final bool isDark;
-  MedicalPatternPainter({this.isDark = true});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = (isDark ? const Color(0xFF00E1FF) : const Color(0xFF0078D4))
-          .withOpacity(0.07)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    // رسم دوائر وسماعة طبية رمزية في الأسفل
-    canvas.drawCircle(
-      Offset(size.width * 0.75, size.height * 0.85),
-      35,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.75, size.height * 0.85),
-      22,
-      paint,
-    );
-
-    final arcPath = Path()
-      ..moveTo(size.width * 0.75 - 35, size.height * 0.85)
-      ..quadraticBezierTo(
-        size.width * 0.3,
-        size.height * 0.95,
-        size.width * 0.2,
-        size.height * 0.70,
-      );
-    canvas.drawPath(arcPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant EcgPainter old) => old.progress != progress;
 }
 
 // ============================================================================
-// 4. شاشة البداية (Splash Screen) مع الرسوم المتحركة
+// 4. شاشة البداية (Splash Screen)
 // ============================================================================
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -631,12 +357,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainShell()),
-        );
-      }
+      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell()));
     });
   }
 
@@ -644,87 +365,44 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const MainShell()),
-          );
-        },
+        onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell())),
         child: Container(
           width: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF030D19), Color(0xFF0A2742), Color(0xFF03101F)],
+              colors: [Color(0xFF030D19), Color(0xFF09243E), Color(0xFF030D19)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
-          child: CustomPaint(
-            painter: MedicalPatternPainter(isDark: true),
-            child: SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 2),
-                  // الشعار الكبير المتوهج
-                  const MediqLogo(size: 135, showText: false),
-                  const SizedBox(height: 28),
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'MEDIQ ',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        TextSpan(
-                          text: 'AI',
-                          style: TextStyle(color: Color(0xFF00E1FF)),
-                        ),
-                      ],
-                    ),
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Spacer(flex: 2),
+                const MediqLogo(size: 130, showText: false),
+                const SizedBox(height: 28),
+                RichText(
+                  text: const TextSpan(
+                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                    children: [
+                      TextSpan(text: 'MEDIQ ', style: TextStyle(color: Colors.white)),
+                      TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF00E1FF))),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Your Medical AI Assistant',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'اسأل ... افهم ... تعلّم',
-                    style: TextStyle(
-                      color: Color(0xFF00E1FF),
-                      fontSize: 21,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  const AnimatedEcgWave(width: 240, height: 48),
-                  const Spacer(flex: 2),
-                  const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Color(0xFF00E1FF),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'جاري تهيئة المساعد الطبي الذكي...',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 36),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Your Medical AI Assistant', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                const SizedBox(height: 24),
+                const Text('اسأل ... افهم ... تعلّم', style: TextStyle(color: Color(0xFF00E1FF), fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 32),
+                const AnimatedEcgWave(width: 240, height: 45),
+                const Spacer(flex: 2),
+                const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF00E1FF))),
+                const SizedBox(height: 16),
+                const Text('جاري تهيئة المساعد الطبي الذكي...', style: TextStyle(color: Colors.white60, fontSize: 13)),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
@@ -734,7 +412,7 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 
 // ============================================================================
-// 5. الهيكل الرئيسي المتجاوب (الهاتف + الحاسوب)
+// 5. الهيكل الرئيسي المتجاوب (Main Shell)
 // ============================================================================
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -744,48 +422,25 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _bottomNavIndex = 0;
+  int _navIndex = 0;
   String? _selectedChatId;
 
-  void _openChat(Map<String, dynamic> chatData) {
+  void _openChat(Map<String, dynamic> chat) {
     final isDesktop = MediaQuery.of(context).size.width >= 950;
     if (isDesktop) {
-      setState(() {
-        _selectedChatId = chatData['id'];
-        _bottomNavIndex = 2;
-      });
+      setState(() { _selectedChatId = chat['id']; _navIndex = 2; });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatDetailScreen(chatData: chatData),
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatData: chat)));
     }
   }
 
-  void _startNewChat() {
-    final newChatData = {
-      'id': 'new',
-      'title': 'محادثة جديدة',
-      'question': '',
-      'answerIntro': '',
-      'bullets': <String>[],
-      'footer': '',
-    };
+  void _newChat() {
+    final newChat = {'id': 'new', 'title': 'محادثة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''};
     final isDesktop = MediaQuery.of(context).size.width >= 950;
     if (isDesktop) {
-      setState(() {
-        _selectedChatId = 'new';
-        _bottomNavIndex = 2;
-      });
+      setState(() { _selectedChatId = 'new'; _navIndex = 2; });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatDetailScreen(chatData: newChatData),
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatData: newChat)));
     }
   }
 
@@ -797,61 +452,27 @@ class _MainShellState extends State<MainShell> {
     if (isDesktop) {
       final activeChat = appController.chats.firstWhere(
         (c) => c['id'] == (_selectedChatId ?? 'anemia'),
-        orElse: () => {
-          'id': 'new',
-          'title': 'استفسار طبي',
-          'question': '',
-          'answerIntro': '',
-          'bullets': <String>[],
-          'footer': '',
-        },
+        orElse: () => {'id': 'new', 'title': 'محادثة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''},
       );
-
       return Scaffold(
         body: Row(
           children: [
-            SizedBox(
-              width: 280,
-              child: DarkSidebarDrawer(
-                onSelectNewChat: _startNewChat,
-                onSelectSettings: () => setState(() => _bottomNavIndex = 3),
-                onSelectHome: () {
-                  appController.setShowFavoritesOnly(false);
-                  setState(() => _bottomNavIndex = 0);
-                },
-                onSelectFavorites: () {
-                  appController.setShowFavoritesOnly(true);
-                  setState(() => _bottomNavIndex = 0);
-                },
-              ),
-            ),
+            SizedBox(width: 280, child: SidebarDrawer(onNewChat: _newChat, onSelectSettings: () => setState(() => _navIndex = 3), onSelectHome: () => {appController.setShowFavoritesOnly(false), setState(() => _navIndex = 0)}, onSelectFav: () => {appController.setShowFavoritesOnly(true), setState(() => _navIndex = 0)})),
             Expanded(
               flex: 3,
-              child: _bottomNavIndex == 3
-                  ? const SettingsScreen(isEmbedded: true)
-                  : _bottomNavIndex == 0
-                      ? MobileHomeScreen(
-                          onOpenChat: _openChat,
-                          onNewChat: _startNewChat,
-                        )
-                      : ChatDetailScreen(
-                          chatData: activeChat,
-                          isEmbedded: true,
-                          onOpenSettings: () =>
-                              setState(() => _bottomNavIndex = 3),
-                        ),
+              child: _navIndex == 3
+                  ? const SettingsScreen(embedded: true)
+                  : _navIndex == 0
+                      ? HomeScreen(onOpenChat: _openChat, onNewChat: _newChat)
+                      : ChatScreen(chatData: activeChat, embedded: true, onOpenSettings: () => setState(() => _navIndex = 3)),
             ),
             Container(
               width: 310,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0A1B2E) : const Color(0xFFF7FAFC),
-                border: Border(
-                  right: BorderSide(
-                    color: isDark ? Colors.white10 : Colors.grey.shade200,
-                  ),
-                ),
+                color: isDark ? const Color(0xFF091828) : const Color(0xFFF8FAFC),
+                border: Border(right: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200)),
               ),
-              child: const DesktopInfoPanel(),
+              child: const InfoPanel(),
             ),
           ],
         ),
@@ -860,90 +481,36 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       drawer: Drawer(
-        backgroundColor: const Color(0xFF061626),
-        child: DarkSidebarDrawer(
-          onSelectNewChat: () {
-            Navigator.pop(context);
-            _startNewChat();
-          },
-          onSelectSettings: () {
-            Navigator.pop(context);
-            setState(() => _bottomNavIndex = 3);
-          },
-          onSelectHome: () {
-            Navigator.pop(context);
-            appController.setShowFavoritesOnly(false);
-            setState(() => _bottomNavIndex = 0);
-          },
-          onSelectFavorites: () {
-            Navigator.pop(context);
-            appController.setShowFavoritesOnly(true);
-            setState(() => _bottomNavIndex = 0);
-          },
+        backgroundColor: const Color(0xFF051220),
+        child: SidebarDrawer(
+          onNewChat: () { Navigator.pop(context); _newChat(); },
+          onSelectSettings: () { Navigator.pop(context); setState(() => _navIndex = 3); },
+          onSelectHome: () { Navigator.pop(context); appController.setShowFavoritesOnly(false); setState(() => _navIndex = 0); },
+          onSelectFav: () { Navigator.pop(context); appController.setShowFavoritesOnly(true); setState(() => _navIndex = 0); },
         ),
       ),
       body: IndexedStack(
-        index: _bottomNavIndex,
+        index: _navIndex,
         children: [
-          MobileHomeScreen(
-            onOpenChat: _openChat,
-            onNewChat: _startNewChat,
-          ),
-          const ChatDetailScreen(
-            chatData: {
-              'id': 'new',
-              'title': 'استكشاف الأسئلة الطبية',
-              'question': '',
-              'answerIntro': '',
-              'bullets': <String>[],
-              'footer': '',
-            },
-            isEmbedded: true,
-          ),
-          ChatDetailScreen(
-            chatData: appController.chats.isNotEmpty
-                ? appController.chats.first
-                : const {
-                    'id': 'new',
-                    'title': 'محادثة جديدة',
-                    'question': '',
-                    'answerIntro': '',
-                    'bullets': <String>[],
-                    'footer': '',
-                  },
-            isEmbedded: true,
-          ),
-          const SettingsScreen(isEmbedded: true),
+          HomeScreen(onOpenChat: _openChat, onNewChat: _newChat),
+          ChatScreen(chatData: const {'id': 'new', 'title': 'استكشاف الأسئلة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''}, embedded: true),
+          ChatScreen(chatData: appController.chats.isNotEmpty ? appController.chats.first : {'id': 'new', 'title': 'محادثة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''}, embedded: true),
+          const SettingsScreen(embedded: true),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _bottomNavIndex,
-        onTap: (index) => setState(() => _bottomNavIndex = index),
+        currentIndex: _navIndex,
+        onTap: (i) => setState(() => _navIndex = i),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: isDark ? const Color(0xFF0A1B2E) : Colors.white,
-        selectedItemColor: const Color(0xFF0078D4),
+        backgroundColor: isDark ? const Color(0xFF081726) : Colors.white,
+        selectedItemColor: const Color(0xFF0066CC),
         unselectedItemColor: const Color(0xFF7A8FA6),
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'الرئيسية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb_outline_rounded),
-            label: 'استكشاف',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_rounded),
-            label: 'المحادثات',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: 'الإعدادات',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
+          BottomNavigationBarItem(icon: Icon(Icons.lightbulb_outline_rounded), label: 'استكشاف'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_rounded), label: 'المحادثات'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'الإعدادات'),
         ],
       ),
     );
@@ -951,17 +518,12 @@ class _MainShellState extends State<MainShell> {
 }
 
 // ============================================================================
-// 6. الشاشة الرئيسية التفاعلية (البحث الفوري + المفضلة + حالة الخادم)
+// 6. الشاشة الرئيسية المحسنة (Home Screen)
 // ============================================================================
-class MobileHomeScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
   final Function(Map<String, dynamic>) onOpenChat;
   final VoidCallback onNewChat;
-
-  const MobileHomeScreen({
-    super.key,
-    required this.onOpenChat,
-    required this.onNewChat,
-  });
+  const HomeScreen({super.key, required this.onOpenChat, required this.onNewChat});
 
   @override
   Widget build(BuildContext context) {
@@ -971,7 +533,6 @@ class MobileHomeScreen extends StatelessWidget {
     return SafeArea(
       child: Column(
         children: [
-          // الشريط العلوي
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -981,211 +542,126 @@ class MobileHomeScreen extends StatelessWidget {
                   onTap: () => Scaffold.maybeOf(context)?.openDrawer(),
                   child: const CircleAvatar(
                     radius: 19,
-                    backgroundColor: Color(0xFF0A2540),
+                    backgroundColor: Color(0xFF061626),
                     child: Icon(Icons.person_rounded, color: Color(0xFF00E1FF)),
                   ),
                 ),
                 const MediqLogo(size: 38),
                 IconButton(
                   onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
-                  icon: Icon(
-                    Icons.menu_open_rounded,
-                    color: isDark ? Colors.white : const Color(0xFF0A2540),
-                    size: 28,
-                  ),
+                  icon: Icon(Icons.menu_open_rounded, color: isDark ? Colors.white : const Color(0xFF061626), size: 28),
                 ),
               ],
             ),
           ),
-
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                // بطاقة حالة الاتصال المحلي (تتغير بالضغط عليها)
+                // بطاقة الاتصال المحلي الفاخرة
                 InkWell(
                   onTap: () => appController.toggleServerStatus(),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF0E2942)
-                          : const Color(0xFFE6F3FF),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: const Color(0xFF0078D4).withOpacity(0.25),
+                      gradient: LinearGradient(
+                        colors: isDark ? [const Color(0xFF0C2540), const Color(0xFF061526)] : [const Color(0xFFE3F2FD), const Color(0xFFF4F9FD)],
                       ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.3)),
                     ),
                     child: Row(
                       children: [
                         Container(
-                          width: 11,
-                          height: 11,
+                          width: 12, height: 12,
                           decoration: BoxDecoration(
-                            color: appController.isLocalServerConnected
-                                ? const Color(0xFF10B981)
-                                : Colors.orange,
+                            color: appController.isLocalServerConnected ? const Color(0xFF10B981) : Colors.orange,
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                appController.isLocalServerConnected
-                                    ? 'يعمل محلياً (${appController.selectedModel})'
-                                    : 'الخادم المحلي متوقف مؤقتاً',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  color: isDark
-                                      ? Colors.white
-                                      : const Color(0xFF0A2540),
-                                ),
+                                appController.isLocalServerConnected ? 'يعمل محلياً (${appController.selectedModel})' : 'الخادم المحلي متوقف',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : const Color(0xFF061626)),
                               ),
+                              const SizedBox(height: 2),
                               Text(
-                                appController.isLocalServerConnected
-                                    ? 'المساعد المحلي متصل وجاهز للإجابة'
-                                    : 'اضغط هنا لإعادة الاتصال بالخادم المحلي',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : const Color(0xFF5A7184),
-                                ),
+                                appController.isLocalServerConnected ? 'المساعد الطبي متصل وجاهز للرد الفوري' : 'اضغط لإعادة الاتصال بالخادم',
+                                style: TextStyle(fontSize: 11.5, color: isDark ? Colors.white70 : const Color(0xFF5A7184)),
                               ),
                             ],
                           ),
                         ),
-                        Icon(
-                          Icons.dns_outlined,
-                          color: isDark ? Colors.white70 : const Color(0xFF0A2540),
-                          size: 22,
-                        ),
+                        const Icon(Icons.dns_rounded, color: Color(0xFF0078D4), size: 24),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 14),
 
-                // شريط البحث الفوري
+                // شريط البحث المطور
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 3))],
                   ),
                   child: TextField(
                     onChanged: appController.setSearchQuery,
                     decoration: InputDecoration(
-                      hintText: 'ابحث في المحادثات...',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF9FB1C1),
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search_rounded,
-                        color: Color(0xFF5A7184),
-                      ),
+                      hintText: 'ابحث في المحادثات الطبية...',
+                      hintStyle: const TextStyle(color: Color(0xFF9FB1C1), fontSize: 14),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0066CC)),
                       suffixIcon: appController.searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () => appController.setSearchQuery(''),
-                            )
+                          ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => appController.setSearchQuery(''))
                           : null,
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
                 const SizedBox(height: 14),
 
-                // زر محادثة جديدة
+                // زر محادثة جديدة الاحترافي
                 InkWell(
                   onTap: onNewChat,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 20,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0088CC), Color(0xFF005599)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF0078D4).withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      gradient: const LinearGradient(colors: [Color(0xFF0078D4), Color(0xFF004BA0)]),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: const Color(0xFF0078D4).withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 5))],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                         Icon(Icons.add_rounded, color: Colors.white, size: 24),
-                        Text(
-                          'محادثة جديدة',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                        Text('محادثة طبية جديدة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                         SizedBox(width: 24),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 22),
 
-                // ترويسة المحادثات الأخيرة مع فلتر المفضلة
+                // عنوان المحادثات
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      appController.showFavoritesOnly
-                          ? 'المحادثات المفضلة ⭐'
-                          : 'المحادثات الأخيرة',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF0A2540),
-                      ),
+                      appController.showFavoritesOnly ? 'المحادثات المفضلة ⭐' : 'المحادثات الأخيرة',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626)),
                     ),
                     TextButton.icon(
-                      onPressed: () => appController.setShowFavoritesOnly(
-                        !appController.showFavoritesOnly,
-                      ),
-                      icon: Icon(
-                        appController.showFavoritesOnly
-                            ? Icons.list_rounded
-                            : Icons.star_rounded,
-                        size: 18,
-                      ),
-                      label: Text(
-                        appController.showFavoritesOnly
-                            ? 'عرض الكل'
-                            : 'المفضلة فقط',
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      onPressed: () => appController.setShowFavoritesOnly(!appController.showFavoritesOnly),
+                      icon: Icon(appController.showFavoritesOnly ? Icons.list_rounded : Icons.star_rounded, size: 18),
+                      label: Text(appController.showFavoritesOnly ? 'عرض الكل' : 'المفضلة فقط', style: const TextStyle(fontSize: 12)),
                     ),
                   ],
                 ),
@@ -1193,13 +669,8 @@ class MobileHomeScreen extends StatelessWidget {
 
                 if (chats.isEmpty)
                   const Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(
-                      child: Text(
-                        'لا توجد محادثات مطابقة للبحث',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
+                    padding: EdgeInsets.all(40.0),
+                    child: Center(child: Text('لا توجد محادثات مطابقة', style: TextStyle(color: Colors.grey))),
                   ),
 
                 // قائمة المحادثات
@@ -1210,77 +681,33 @@ class MobileHomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 3))],
                     ),
                     child: ListTile(
                       onTap: () => onOpenChat(chat),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       leading: Container(
-                        width: 46,
-                        height: 46,
+                        width: 48, height: 48,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF163452)
-                              : const Color(0xFFE6F4FA),
-                          borderRadius: BorderRadius.circular(12),
+                          color: isDark ? const Color(0xFF103154) : const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(
-                          chat['icon'] as IconData,
-                          color: const Color(0xFF0078D4),
-                          size: 25,
-                        ),
+                        child: Icon(chat['icon'] as IconData, color: const Color(0xFF0078D4), size: 26),
                       ),
-                      title: Text(
-                        chat['title'],
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.5,
-                          color: isDark ? Colors.white : const Color(0xFF0A2540),
-                        ),
-                      ),
+                      title: Text(chat['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF061626))),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          chat['subtitle'],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF7A8FA6),
-                          ),
-                        ),
+                        child: Text(chat['subtitle'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF7A8FA6))),
                       ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            chat['time'],
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              color: Color(0xFF9FB1C1),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
+                          Text(chat['time'], style: const TextStyle(fontSize: 10.5, color: Color(0xFF9FB1C1))),
+                          const SizedBox(height: 6),
                           GestureDetector(
-                            onTap: () =>
-                                appController.toggleFavorite(chat['id']),
-                            child: Icon(
-                              isFav
-                                  ? Icons.star_rounded
-                                  : Icons.star_border_rounded,
-                              color: isFav ? Colors.amber : Colors.grey,
-                              size: 20,
-                            ),
+                            onTap: () => appController.toggleFavorite(chat['id']),
+                            child: Icon(isFav ? Icons.star_rounded : Icons.star_border_rounded, color: isFav ? Colors.amber : Colors.grey, size: 20),
                           ),
                         ],
                       ),
@@ -1297,375 +724,192 @@ class MobileHomeScreen extends StatelessWidget {
 }
 
 // ============================================================================
-// 7. القائمة الجانبية الداكنة (Dark Sidebar Drawer)
+// 7. القائمة الجانبية الداكنة الفاخرة (Sidebar Drawer)
 // ============================================================================
-class DarkSidebarDrawer extends StatelessWidget {
-  final VoidCallback onSelectNewChat;
+class SidebarDrawer extends StatelessWidget {
+  final VoidCallback onNewChat;
   final VoidCallback onSelectSettings;
   final VoidCallback onSelectHome;
-  final VoidCallback onSelectFavorites;
+  final VoidCallback onSelectFav;
 
-  const DarkSidebarDrawer({
-    super.key,
-    required this.onSelectNewChat,
-    required this.onSelectSettings,
-    required this.onSelectHome,
-    required this.onSelectFavorites,
-  });
+  const SidebarDrawer({super.key, required this.onNewChat, required this.onSelectSettings, required this.onSelectHome, required this.onSelectFav});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF061626),
-      child: CustomPaint(
-        painter: MedicalPatternPainter(isDark: true),
+      color: const Color(0xFF051220),
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: MediqLogo(size: 40, forceDarkText: true),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: MediqLogo(size: 40, forceDark: true),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(height: 16),
-
-                // بطاقة المستخدم
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Color(0xFF0078D4),
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              appController.userName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              appController.userHandle,
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-
-                // زر محادثة جديدة
-                InkWell(
-                  onTap: onSelectNewChat,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Color(0xFF0078D4),
+                      child: Icon(Icons.person, color: Colors.white),
                     ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0088FF), Color(0xFF005299)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.chat_rounded, color: Colors.white, size: 20),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'محادثة جديدة',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.add_rounded, color: Colors.white, size: 22),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                _buildMenuItem(
-                  icon: Icons.history_rounded,
-                  title: 'المحادثات السابقة',
-                  onTap: onSelectHome,
-                ),
-                _buildMenuItem(
-                  icon: Icons.search_rounded,
-                  title: 'البحث في المحادثات',
-                  onTap: onSelectHome,
-                ),
-                _buildMenuItem(
-                  icon: Icons.star_border_rounded,
-                  title: 'المفضلة',
-                  onTap: onSelectFavorites,
-                ),
-                _buildMenuItem(
-                  icon: Icons.menu_book_rounded,
-                  title: 'المعلومات الطبية',
-                  onTap: onSelectHome,
-                ),
-                _buildMenuItem(
-                  icon: Icons.settings_outlined,
-                  title: 'الإعدادات',
-                  onTap: onSelectSettings,
-                ),
-
-                const Spacer(),
-
-                // حالة الاتصال المحلي
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A243C),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: const Color(0xFF00C6FF).withOpacity(0.25),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: appController.isLocalServerConnected
-                                  ? const Color(0xFF10B981)
-                                  : Colors.orange,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            appController.isLocalServerConnected
-                                ? 'يعمل محلياً'
-                                : 'غير متصل',
-                            style: TextStyle(
-                              color: appController.isLocalServerConnected
-                                  ? const Color(0xFF10B981)
-                                  : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Icon(
-                            Icons.wifi_off_rounded,
-                            color: Colors.white54,
-                            size: 18,
-                          ),
+                          Text(appController.userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(appController.userHandle, style: const TextStyle(color: Colors.white54, fontSize: 12)),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'النموذج متصل بالشبكة المحلية (بدون إنترنت)',
-                        style: TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              InkWell(
+                onTap: onNewChat,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF0078D4), Color(0xFF004BA0)]),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 12),
+                      Expanded(child: Text('محادثة جديدة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
+                      Icon(Icons.add_rounded, color: Colors.white, size: 22),
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-
-                // بطاقة النموذج
-                InkWell(
-                  onTap: () => appController.cycleModel(),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
+              ),
+              const SizedBox(height: 16),
+              _item(Icons.history_rounded, 'المحادثات السابقة', onSelectHome),
+              _item(Icons.search_rounded, 'البحث في المحادثات', onSelectHome),
+              _item(Icons.star_border_rounded, 'المفضلة', onSelectFav),
+              _item(Icons.menu_book_rounded, 'المعلومات الطبية', onSelectHome),
+              _item(Icons.settings_outlined, 'الإعدادات', onSelectSettings),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B1E33),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF00C6FF).withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        const Icon(
-                          Icons.memory_rounded,
-                          color: Color(0xFF00C6FF),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'النموذج المستخدم (اضغط للتبديل)',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 10.5,
-                              ),
-                            ),
-                            Text(
-                              appController.selectedModel,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
+                        Container(width: 9, height: 9, decoration: BoxDecoration(color: appController.isLocalServerConnected ? const Color(0xFF10B981) : Colors.orange, shape: BoxShape.circle)),
+                        const SizedBox(width: 8),
+                        Text(appController.isLocalServerConnected ? 'يعمل محلياً' : 'غير متصل', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13)),
+                        const Spacer(),
+                        const Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 18),
                       ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      'MEDIQ AI v1.0.0',
-                      style: TextStyle(color: Colors.white38, fontSize: 11),
-                    ),
-                    Icon(Icons.verified_rounded, color: Colors.white38, size: 15),
+                    const SizedBox(height: 6),
+                    const Text('النموذج متصل بالشبكة المحلية (بدون إنترنت)', style: TextStyle(color: Colors.white70, fontSize: 11)),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.memory_rounded, color: Color(0xFF00C6FF), size: 20),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('النموذج المستخدم', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                        Text(appController.selectedModel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('MEDIQ AI v1.0.0', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                  Icon(Icons.verified_rounded, color: Colors.white38, size: 15),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
+  Widget _item(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       onTap: onTap,
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: Colors.white70, size: 21),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-      ),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
     );
   }
 }
 
 // ============================================================================
-// 8. شاشة المحادثة التفاعلية (نسخ، تقييم، إعادة توليد، رد ذكي)
+// 8. شاشة المحادثة التفاعلية (Chat Screen)
 // ============================================================================
-class ChatDetailScreen extends StatefulWidget {
+class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> chatData;
-  final bool isEmbedded;
+  final bool embedded;
   final VoidCallback? onOpenSettings;
-
-  const ChatDetailScreen({
-    super.key,
-    required this.chatData,
-    this.isEmbedded = false,
-    this.onOpenSettings,
-  });
+  const ChatScreen({super.key, required this.chatData, this.embedded = false, this.onOpenSettings});
 
   @override
-  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final List<Map<String, dynamic>> _sessionExchanges = [];
-  bool _isGenerating = false;
-  int _reactionState = 0; // 0: بدون، 1: إعجاب، -1: عدم إعجاب
-  int _regenerationCount = 0;
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  final List<Map<String, dynamic>> _exchanges = [];
+  bool _loading = false;
+  int _reaction = 0; // 1: like, -1: dislike
 
-  void _sendMessage([String? presetText]) async {
-    final text = presetText ?? _controller.text.trim();
-    if (text.isEmpty || _isGenerating) return;
-    _controller.clear();
+  void _send([String? preset]) async {
+    final txt = preset ?? _ctrl.text.trim();
+    if (txt.isEmpty || _loading) return;
+    _ctrl.clear();
+    setState(() => _loading = true);
 
-    setState(() {
-      _isGenerating = true;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 900));
-    final generated = appController.generateMedicalReply(text);
-
-    if (mounted) {
-      setState(() {
-        _isGenerating = false;
-        _sessionExchanges.add(generated);
-      });
-    }
-  }
-
-  void _copyResponse(Map<String, dynamic> data) {
-    final bullets = (data['bullets'] as List).join('\n• ');
-    final fullText =
-        '${data['answerIntro']}\n• $bullets\n\n${data['footer']}';
-    Clipboard.setData(ClipboardData(text: fullText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم نسخ الإجابة الطبية إلى الحافظة بنجاح ✓'),
-        duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFF0078D4),
-      ),
-    );
-  }
-
-  void _regenerateResponse() async {
-    setState(() => _isGenerating = true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() {
-        _isGenerating = false;
-        _regenerationCount++;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تم إعادة توليد الإجابة بواسطة ${appController.selectedModel}',
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+    await Future.delayed(const Duration(milliseconds: 700));
+    final reply = appController.generateReply(txt);
+    if (mounted) setState(() { _loading = false; _exchanges.add(reply); });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bool isNewChat =
-        widget.chatData['id'] == 'new' && _sessionExchanges.isEmpty;
+    final isNew = widget.chatData['id'] == 'new' && _exchanges.isEmpty;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).cardColor,
         elevation: 0.5,
-        automaticallyImplyLeading: !widget.isEmbedded,
+        automaticallyImplyLeading: !widget.embedded,
         title: Row(
           children: [
             const MediqLogo(size: 34, showText: false),
@@ -1674,38 +918,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.chatData['title'] ?? 'محادثة طبية',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0A2540),
-                    ),
-                  ),
+                  Text(widget.chatData['title'] ?? 'محادثة طبية', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626))),
                   Row(
                     children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: appController.isLocalServerConnected
-                              ? const Color(0xFF10B981)
-                              : Colors.orange,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
                       const SizedBox(width: 5),
-                      Text(
-                        appController.isLocalServerConnected
-                            ? 'متصل محلياً • ${appController.selectedModel}'
-                            : 'غير متصل بالخادم المحلي',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: appController.isLocalServerConnected
-                              ? const Color(0xFF10B981)
-                              : Colors.orange,
-                        ),
-                      ),
+                      Text('متصل محلياً • ${appController.selectedModel}', style: const TextStyle(fontSize: 11, color: Color(0xFF10B981))),
                     ],
                   ),
                 ],
@@ -1716,164 +934,103 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         actions: [
           if (widget.chatData['id'] != 'new')
             IconButton(
-              onPressed: () =>
-                  appController.toggleFavorite(widget.chatData['id']),
+              onPressed: () => appController.toggleFavorite(widget.chatData['id']),
               icon: Icon(
-                widget.chatData['isFavorite'] == true
-                    ? Icons.star_rounded
-                    : Icons.star_border_rounded,
-                color: widget.chatData['isFavorite'] == true
-                    ? Colors.amber
-                    : null,
+                widget.chatData['isFavorite'] == true ? Icons.star_rounded : Icons.star_border_rounded,
+                color: widget.chatData['isFavorite'] == true ? Colors.amber : null,
               ),
             ),
           if (widget.onOpenSettings != null)
-            IconButton(
-              onPressed: widget.onOpenSettings,
-              icon: const Icon(Icons.settings_outlined),
-            ),
+            IconButton(onPressed: widget.onOpenSettings, icon: const Icon(Icons.settings_outlined)),
         ],
       ),
       body: Column(
         children: [
           Expanded(
-            child: isNewChat
-                ? _buildWelcomePromptView(isDark)
+            child: isNew
+                ? _buildWelcomeView(isDark)
                 : ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      if ((widget.chatData['question'] as String)
-                          .isNotEmpty) ...[
-                        _buildUserBubble(widget.chatData['question']),
+                      if ((widget.chatData['question'] as String).isNotEmpty) ...[
+                        _userBubble(widget.chatData['question']),
                         const SizedBox(height: 16),
-                        _buildAiStructuredResponse(widget.chatData, isDark),
+                        _aiBubble(widget.chatData, isDark),
                       ],
-                      ..._sessionExchanges.map((exchange) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 20),
-                          child: Column(
-                            children: [
-                              _buildUserBubble(exchange['question']),
-                              const SizedBox(height: 16),
-                              _buildAiStructuredResponse(exchange, isDark),
-                            ],
-                          ),
-                        );
-                      }),
-                      if (_isGenerating)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                      ..._exchanges.map((ex) => Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Column(
+                          children: [
+                            _userBubble(ex['question']),
+                            const SizedBox(height: 16),
+                            _aiBubble(ex, isDark),
+                          ],
+                        ),
+                      )),
+                      if (_loading)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
                           child: Row(
                             children: [
-                              const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'جاري تحليل السؤال الطبي بواسطة ${appController.selectedModel}...',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF0078D4),
-                                ),
-                              ),
+                              SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              SizedBox(width: 12),
+                              Text('جاري تحليل السؤال الطبي...', style: TextStyle(color: Color(0xFF0078D4), fontSize: 13)),
                             ],
                           ),
                         ),
                     ],
                   ),
           ),
-          _buildBottomInputBar(isDark),
+          _inputBar(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildWelcomePromptView(bool isDark) {
-    final suggestions = [
-      {'title': 'ما هي أعراض\nارتفاع ضغط الدم؟', 'icon': Icons.favorite_border},
-      {'title': 'كيف يعمل\nالجهاز المناعي؟', 'icon': Icons.shield_outlined},
-      {'title': 'ما فائدة فيتامين\nD للجسم؟', 'icon': Icons.wb_sunny_outlined},
-      {'title': 'ما أسباب الصداع\nالمستمر؟', 'icon': Icons.psychology_outlined},
+  Widget _buildWelcomeView(bool isDark) {
+    final list = [
+      {'t': 'ما هي أعراض\nارتفاع ضغط الدم؟', 'i': Icons.favorite_border_rounded},
+      {'t': 'كيف يعمل\nالجهاز المناعي؟', 'i': Icons.shield_outlined},
+      {'t': 'ما فائدة فيتامين\nD للجسم؟', 'i': Icons.wb_sunny_outlined},
+      {'t': 'ما أسباب الصداع\nالمستمر؟', 'i': Icons.psychology_outlined},
     ];
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const MediqLogo(size: 72, showText: false),
+            const MediqLogo(size: 70, showText: false),
             const SizedBox(height: 14),
-            Text(
-              'MEDIQ AI',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : const Color(0xFF0A2540),
-              ),
-            ),
-            const Text(
-              'مساعدك الطبي الذكي',
-              style: TextStyle(fontSize: 14, color: Color(0xFF5A7184)),
-            ),
+            Text('MEDIQ AI', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF061626))),
+            const Text('مساعدك الطبي الذكي', style: TextStyle(fontSize: 14, color: Color(0xFF5A7184))),
             const SizedBox(height: 24),
-            Text(
-              'كيف يمكنني مساعدتك اليوم؟',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF0A2540),
-              ),
-            ),
-            const SizedBox(height: 28),
+            Text('كيف يمكنني مساعدتك اليوم؟', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626))),
+            const SizedBox(height: 24),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               alignment: WrapAlignment.center,
-              children: suggestions.map((item) {
-                return InkWell(
-                  onTap: () => _sendMessage(
-                    (item['title'] as String).replaceAll('\n', ' '),
+              children: list.map((item) => InkWell(
+                onTap: () => _send((item['t'] as String).replaceAll('\n', ' ')),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 160,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    width: 160,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white12
-                            : const Color(0xFFE1ECF4),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          item['icon'] as IconData,
-                          color: const Color(0xFF0078D4),
-                          size: 22,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          item['title'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF0A2540),
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(item['i'] as IconData, color: const Color(0xFF0078D4), size: 24),
+                      const SizedBox(height: 12),
+                      Text(item['t'] as String, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF061626))),
+                    ],
                   ),
-                );
-              }).toList(),
+                ),
+              )).toList(),
             ),
           ],
         ),
@@ -1881,7 +1038,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildUserBubble(String text) {
+  Widget _userBubble(String txt) {
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -1890,33 +1047,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         decoration: const BoxDecoration(
           color: Color(0xFFD0EBFF),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
             bottomRight: Radius.circular(4),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              text,
-              style: const TextStyle(
-                color: Color(0xFF0A2540),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
+            Text(txt, style: const TextStyle(color: Color(0xFF061626), fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 4),
-            Row(
+            const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(Icons.done_all_rounded, size: 14, color: Color(0xFF0078D4)),
                 SizedBox(width: 4),
-                Text(
-                  '10:24 م',
-                  style: TextStyle(fontSize: 10, color: Color(0xFF5A7184)),
-                ),
+                Text('09:24 م', style: TextStyle(fontSize: 10, color: Color(0xFF5A7184))),
               ],
             ),
           ],
@@ -1925,9 +1072,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildAiStructuredResponse(Map<String, dynamic> data, bool isDark) {
+  Widget _aiBubble(Map<String, dynamic> data, bool isDark) {
     final bullets = (data['bullets'] as List).cast<String>();
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1937,109 +1083,45 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
-                      'MEDIQ AI',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: isDark ? Colors.white : const Color(0xFF0A2540),
-                      ),
-                    ),
+                    Text('MEDIQ AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF061626))),
                     const SizedBox(width: 8),
-                    Text(
-                      _regenerationCount > 0
-                          ? 'تم التحديث (#$_regenerationCount)'
-                          : '10:25 م',
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
+                    const Text('10:25 م', style: TextStyle(fontSize: 11, color: Colors.grey)),
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  data['answerIntro'],
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.6,
-                    color: isDark ? Colors.white : const Color(0xFF1E293B),
-                  ),
-                ),
+                Text(data['answerIntro'], style: TextStyle(fontSize: 14, height: 1.6, color: isDark ? Colors.white : const Color(0xFF1E293B))),
                 const SizedBox(height: 12),
-                ...bullets.map(
-                  (point) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8, right: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '• ',
-                          style: TextStyle(
-                            color: Color(0xFF0078D4),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            point,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              height: 1.5,
-                              color: isDark
-                                  ? Colors.white70
-                                  : const Color(0xFF334155),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                ...bullets.map((b) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8, right: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('• ', style: TextStyle(color: Color(0xFF0078D4), fontWeight: FontWeight.bold, fontSize: 16)),
+                      Expanded(child: Text(b, style: TextStyle(fontSize: 13.5, height: 1.5, color: isDark ? Colors.white70 : const Color(0xFF334155)))),
+                    ],
                   ),
-                ),
+                )),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF122C46)
-                        : const Color(0xFFF0F7FF),
+                    color: isDark ? const Color(0xFF102C48) : const Color(0xFFF0F7FF),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF0078D4).withOpacity(0.25),
-                    ),
+                    border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.2)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.info_rounded,
-                        color: Color(0xFF0078D4),
-                        size: 18,
-                      ),
+                      const Icon(Icons.info_rounded, color: Color(0xFF0078D4), size: 18),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          data['footer'],
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            height: 1.5,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF0A2540),
-                          ),
-                        ),
-                      ),
+                      Expanded(child: Text(data['footer'], style: TextStyle(fontSize: 12.5, height: 1.5, color: isDark ? Colors.white : const Color(0xFF061626)))),
                     ],
                   ),
                 ),
@@ -2048,35 +1130,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _buildActionButton(
-                      icon: _reactionState == 1
-                          ? Icons.thumb_up_alt_rounded
-                          : Icons.thumb_up_alt_outlined,
-                      label: '',
-                      isActive: _reactionState == 1,
-                      onTap: () => setState(
-                        () => _reactionState = _reactionState == 1 ? 0 : 1,
-                      ),
+                    _actionBtn(
+                      icon: _reaction == 1 ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                      active: _reaction == 1,
+                      onTap: () => setState(() => _reaction = _reaction == 1 ? 0 : 1),
                     ),
-                    _buildActionButton(
-                      icon: _reactionState == -1
-                          ? Icons.thumb_down_alt_rounded
-                          : Icons.thumb_down_alt_outlined,
-                      label: '',
-                      isActive: _reactionState == -1,
-                      onTap: () => setState(
-                        () => _reactionState = _reactionState == -1 ? 0 : -1,
-                      ),
+                    _actionBtn(
+                      icon: _reaction == -1 ? Icons.thumb_down_alt_rounded : Icons.thumb_down_alt_outlined,
+                      active: _reaction == -1,
+                      onTap: () => setState(() => _reaction = _reaction == -1 ? 0 : -1),
                     ),
-                    _buildActionButton(
+                    _actionBtn(
                       icon: Icons.copy_rounded,
                       label: 'نسخ الإجابة',
-                      onTap: () => _copyResponse(data),
-                    ),
-                    _buildActionButton(
-                      icon: Icons.refresh_rounded,
-                      label: 'إعادة التوليد',
-                      onTap: _regenerateResponse,
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: '${data['answerIntro']}\n${bullets.join("\n")}'));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الإجابة بنجاح ✓'), duration: Duration(seconds: 2)));
+                      },
                     ),
                   ],
                 ),
@@ -2090,45 +1160,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isActive = false,
-  }) {
+  Widget _actionBtn({required IconData icon, String label = '', bool active = false, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive
-              ? const Color(0xFF0078D4).withOpacity(0.15)
-              : Colors.grey.withOpacity(0.1),
+          color: active ? const Color(0xFF0078D4).withOpacity(0.15) : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive ? const Color(0xFF0078D4) : Colors.grey.shade300,
-          ),
+          border: Border.all(color: active ? const Color(0xFF0078D4) : Colors.grey.shade300),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 15,
-              color: isActive
-                  ? const Color(0xFF0078D4)
-                  : const Color(0xFF5A7184),
-            ),
+            Icon(icon, size: 15, color: active ? const Color(0xFF0078D4) : const Color(0xFF5A7184)),
             if (label.isNotEmpty) ...[
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ],
           ],
         ),
@@ -2136,40 +1185,27 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildBottomInputBar(bool isDark) {
+  Widget _inputBar(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
             InkWell(
-              onTap: () => _sendMessage(),
+              onTap: () => _send(),
               borderRadius: BorderRadius.circular(30),
               child: Container(
-                width: 46,
-                height: 46,
+                width: 46, height: 46,
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0088FF), Color(0xFF0055CC)],
-                  ),
+                  gradient: LinearGradient(colors: [Color(0xFF0088FF), Color(0xFF0055CC)]),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),
             const SizedBox(width: 10),
@@ -2177,52 +1213,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF071524)
-                      : const Color(0xFFF3F7FB),
+                  color: isDark ? const Color(0xFF040E18) : const Color(0xFFF4F7FC),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? Colors.white12 : const Color(0xFFE1ECF4),
-                  ),
+                  border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: _controller,
-                        onSubmitted: (_) => _sendMessage(),
+                        controller: _ctrl,
+                        onSubmitted: (_) => _send(),
                         decoration: const InputDecoration(
                           hintText: 'اكتب سؤالك الطبي هنا...',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF9FB1C1),
-                            fontSize: 13.5,
-                          ),
+                          hintStyle: TextStyle(color: Color(0xFF9FB1C1), fontSize: 13.5),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('ميزة الإدخال الصوتي جاهزة للربط قريباً'),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.mic_none_rounded,
-                        color: Color(0xFF5A7184),
-                        size: 20,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.image_outlined,
-                        color: Color(0xFF5A7184),
-                        size: 20,
-                      ),
-                    ),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.mic_none_rounded, color: Color(0xFF5A7184), size: 20)),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.image_outlined, color: Color(0xFF5A7184), size: 20)),
                   ],
                 ),
               ),
@@ -2235,51 +1244,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 }
 
 // ============================================================================
-// 9. شاشة الإعدادات التفاعلية الكاملة (Settings Screen)
+// 9. شاشة الإعدادات الاحترافية (Settings Screen)
 // ============================================================================
 class SettingsScreen extends StatelessWidget {
-  final bool isEmbedded;
-
-  const SettingsScreen({super.key, this.isEmbedded = false});
-
-  void _showEditProfileDialog(BuildContext context) {
-    final nameCtrl = TextEditingController(text: appController.userName);
-    final handleCtrl = TextEditingController(text: appController.userHandle);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('تعديل بيانات المستخدم'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'الاسم'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: handleCtrl,
-              decoration: const InputDecoration(labelText: 'اسم المستخدم'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              appController.updateUserProfile(nameCtrl.text, handleCtrl.text);
-              Navigator.pop(ctx);
-            },
-            child: const Text('حفظ'),
-          ),
-        ],
-      ),
-    );
-  }
+  final bool embedded;
+  const SettingsScreen({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -2290,199 +1259,64 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        automaticallyImplyLeading: !isEmbedded,
-        title: Text(
-          'الإعدادات',
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0A2540),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
+        automaticallyImplyLeading: !embedded,
+        title: Text('الإعدادات', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF061626), fontWeight: FontWeight.bold, fontSize: 18)),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16),
         children: [
-          // بطاقة المستخدم (قابلة للتعديل)
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
             child: ListTile(
-              onTap: () => _showEditProfileDialog(context),
               contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(
-                radius: 24,
-                backgroundColor: Color(0xFF0078D4),
-                child: Icon(Icons.person, color: Colors.white, size: 28),
-              ),
-              title: Text(
-                appController.userName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                appController.userHandle,
-                style: const TextStyle(color: Color(0xFF7A8FA6), fontSize: 13),
-              ),
-              trailing: const Icon(
-                Icons.edit_outlined,
-                size: 18,
-                color: Color(0xFF0078D4),
-              ),
+              leading: const CircleAvatar(radius: 24, backgroundColor: Color(0xFF0078D4), child: Icon(Icons.person, color: Colors.white, size: 28)),
+              title: Text(appController.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(appController.userHandle, style: const TextStyle(color: Color(0xFF7A8FA6), fontSize: 13)),
+              trailing: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF0078D4)),
             ),
           ),
           const SizedBox(height: 24),
-
-          const Text(
-            'إعدادات التطبيق (اضغط للتغيير)',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
+          const Text('إعدادات التطبيق', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 10),
-
-          _buildSettingsTile(
-            context: context,
-            icon: isDark ? Icons.dark_mode_outlined : Icons.wb_sunny_outlined,
-            title: 'المظهر',
-            trailingText: isDark ? 'الوضع الداكن' : 'الوضع الفاتح',
-            onTap: appController.toggleTheme,
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.language_rounded,
-            title: 'اللغة',
-            trailingText: appController.language,
-            onTap: () {},
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.text_fields_rounded,
-            title: 'حجم الخط',
-            trailingText: appController.fontSizeLabel,
-            onTap: appController.cycleFontSize,
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.save_outlined,
-            title: 'حفظ المحادثات',
-            trailingText: appController.saveChats ? 'تفعيل' : 'إيقاف',
-            isConnectedStatus: appController.saveChats,
-            onTap: appController.toggleSaveChats,
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.notifications_none_rounded,
-            title: 'الإشعارات',
-            trailingText: appController.notificationsEnabled ? 'تفعيل' : 'إيقاف',
-            isConnectedStatus: appController.notificationsEnabled,
-            onTap: appController.toggleNotifications,
-          ),
-
+          _tile(context, isDark ? Icons.dark_mode_outlined : Icons.wb_sunny_outlined, 'المظهر', isDark ? 'الوضع الداكن' : 'الوضع الفاتح', appController.toggleTheme),
+          _tile(context, Icons.language_rounded, 'اللغة', appController.language, () {}),
+          _tile(context, Icons.text_fields_rounded, 'حجم الخط', appController.fontSizeLabel, appController.cycleFontSize),
+          _tile(context, Icons.save_outlined, 'حفظ المحادثات', appController.saveChats ? 'تفعيل' : 'إيقاف', appController.toggleSaveChats),
+          _tile(context, Icons.notifications_none_rounded, 'الإشعارات', appController.notificationsEnabled ? 'تفعيل' : 'إيقاف', appController.toggleNotifications),
           const SizedBox(height: 20),
-
-          const Text(
-            'معلومات النموذج المحلي',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
+          const Text('معلومات النموذج المحلي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 10),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.memory_rounded,
-            title: 'اسم النموذج',
-            trailingText: appController.selectedModel,
-            highlightTrailing: true,
-            onTap: appController.cycleModel,
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.dns_outlined,
-            title: 'حالة الخادم المحلي',
-            trailingText:
-                appController.isLocalServerConnected ? 'متصل ●' : 'غير متصل ○',
-            isConnectedStatus: appController.isLocalServerConnected,
-            onTap: appController.toggleServerStatus,
-          ),
-
+          _tile(context, Icons.memory_rounded, 'اسم النموذج', appController.selectedModel, appController.cycleModel),
+          _tile(context, Icons.dns_outlined, 'حالة الخادم', appController.isLocalServerConnected ? 'متصل ●' : 'غير متصل ○', appController.toggleServerStatus),
           const SizedBox(height: 24),
-
           Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(14),
-            ),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(14)),
             child: ListTile(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SplashScreen()),
-                );
-              },
-              leading: const Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFE11D48),
-              ),
-              title: const Text(
-                'إعادة تشغيل / تسجيل الخروج',
-                style: TextStyle(
-                  color: Color(0xFFE11D48),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
+              onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SplashScreen())),
+              leading: const Icon(Icons.logout_rounded, color: Color(0xFFE11D48)),
+              title: const Text('إعادة التشغيل', style: TextStyle(color: Color(0xFFE11D48), fontWeight: FontWeight.bold, fontSize: 14)),
             ),
           ),
-          const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String trailingText,
-    required VoidCallback onTap,
-    bool highlightTrailing = false,
-    bool isConnectedStatus = false,
-  }) {
+  Widget _tile(BuildContext context, IconData icon, String title, String trailing, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         onTap: onTap,
         leading: Icon(icon, color: const Color(0xFF0078D4), size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
+        title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              trailingText,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: highlightTrailing || isConnectedStatus
-                    ? FontWeight.bold
-                    : null,
-                color: isConnectedStatus
-                    ? const Color(0xFF10B981)
-                    : highlightTrailing
-                        ? const Color(0xFF0078D4)
-                        : const Color(0xFF7A8FA6),
-              ),
-            ),
+            Text(trailing, style: const TextStyle(fontSize: 13, color: Color(0xFF0078D4), fontWeight: FontWeight.bold)),
             const SizedBox(width: 6),
-            const Icon(
-              Icons.Sync_alt_rounded,
-              size: 15,
-              color: Color(0xFF9FB1C1),
-            ),
+            const Icon(Icons.sync_alt_rounded, size: 15, color: Color(0xFF9FB1C1)),
           ],
         ),
       ),
@@ -2491,166 +1325,79 @@ class SettingsScreen extends StatelessWidget {
 }
 
 // ============================================================================
-// 10. اللوحة التعريفية الجانبية (Desktop Info Panel)
+// 10. اللوحة الجانبية لأجهزة الحواسيب (Info Panel)
 // ============================================================================
-class DesktopInfoPanel extends StatelessWidget {
-  const DesktopInfoPanel({super.key});
+class InfoPanel extends StatelessWidget {
+  const InfoPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return CustomPaint(
-      painter: MedicalPatternPainter(isDark: isDark),
-      child: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF122C46)
-                  : const Color(0xFFEBF5FF),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.monitor_heart_rounded,
-                  color: Color(0xFF00B4DB),
-                  size: 48,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'مساعدك الطبي الذكي',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF0A2540),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'احصل على إجابات دقيقة وموثوقة لأسئلتك الطبية.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12.5, color: Color(0xFF5A7184)),
-                ),
-              ],
-            ),
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF102C48) : const Color(0xFFEBF5FF),
+            borderRadius: BorderRadius.circular(18),
           ),
-          const SizedBox(height: 20),
-
-          _buildFeatureItem(
-            icon: Icons.verified_user_outlined,
-            title: 'معلومات طبية موثوقة',
-            subtitle: 'مبنية على مصادر طبية معتمدة',
-            isDark: isDark,
+          child: Column(
+            children: [
+              const Icon(Icons.monitor_heart_rounded, color: Color(0xFF00B4DB), size: 48),
+              const SizedBox(height: 12),
+              Text('مساعدك الطبي الذكي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : const Color(0xFF061626))),
+              const SizedBox(height: 6),
+              const Text('إجابات دقيقة وموثوقة لأسئلتك الطبية.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5, color: Color(0xFF5A7184))),
+            ],
           ),
-          _buildFeatureItem(
-            icon: Icons.language_rounded,
-            title: 'دعم اللغة العربية',
-            subtitle: 'تواصل بسهولة بلغتك الأم',
-            isDark: isDark,
+        ),
+        const SizedBox(height: 20),
+        _feat(Icons.verified_user_outlined, 'معلومات موثوقة', 'مبنية على مصادر طبية معتمدة', isDark),
+        _feat(Icons.language_rounded, 'اللغة العربية', 'تواصل بسهولة بلغتك الأم', isDark),
+        _feat(Icons.wifi_tethering_off_rounded, 'يعمل محلياً', 'بدون الحاجة للإنترنت', isDark),
+        _feat(Icons.lock_outline_rounded, 'خصوصية تامة', 'لا يتم إرسال بياناتك لأي جهة', isDark),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF102C48) : const Color(0xFFE6F3FF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.25)),
           ),
-          _buildFeatureItem(
-            icon: Icons.wifi_tethering_off_rounded,
-            title: 'يعمل محلياً',
-            subtitle: 'بدون الحاجة للإنترنت',
-            isDark: isDark,
-          ),
-          _buildFeatureItem(
-            icon: Icons.lock_outline_rounded,
-            title: 'خصوصيتك تهمنا',
-            subtitle: 'لا يتم إرسال بياناتك لأي جهة خارجية',
-            isDark: isDark,
-          ),
-
-          const SizedBox(height: 20),
-
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF122C46)
-                  : const Color(0xFFE6F3FF),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF0078D4).withOpacity(0.25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Color(0xFF0078D4), size: 20),
+                  SizedBox(width: 8),
+                  Text('تنويه مهم', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0078D4), fontSize: 14)),
+                ],
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: const [
-                    Icon(Icons.info_outline, color: Color(0xFF0078D4), size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'تنويه مهم',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0078D4),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'المعلومات المقدمة في هذا التطبيق للتثقيف الطبي فقط، ولا تغني عن استشارة الطبيب المختص.\n\nفي حالات الطوارئ، يرجى التوجه مباشرة إلى أقرب مركز طبي.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.6,
-                    color: isDark ? Colors.white70 : const Color(0xFF0A2540),
-                  ),
-                ),
-              ],
-            ),
+              const SizedBox(height: 10),
+              Text('المعلومات المقدمة للتثقيف الطبي فقط، ولا تغني عن استشارة الطبيب المختص.', style: TextStyle(fontSize: 12, height: 1.6, color: isDark ? Colors.white70 : const Color(0xFF061626))),
+            ],
           ),
-          const SizedBox(height: 24),
-          const Center(
-            child: AnimatedEcgWave(
-              width: 180,
-              height: 32,
-              color: Color(0xFF0078D4),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              'معاً نحو صحة أفضل',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF0A2540),
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Center(child: MediqLogo(size: 36, showText: true)),
-        ],
-      ),
+        ),
+        const SizedBox(height: 24),
+        const Center(child: AnimatedEcgWave(width: 180, height: 32, color: Color(0xFF0078D4))),
+        const SizedBox(height: 8),
+        Center(child: Text('معاً نحو صحة أفضل', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626), fontSize: 13))),
+        const SizedBox(height: 12),
+        const Center(child: MediqLogo(size: 36, showText: true)),
+      ],
     );
   }
 
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool isDark,
-  }) {
+  Widget _feat(IconData icon, String title, String sub, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF122C46)
-                  : const Color(0xFFE6F4FA),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: isDark ? const Color(0xFF102C48) : const Color(0xFFE6F4FA), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: const Color(0xFF0078D4), size: 20),
           ),
           const SizedBox(width: 12),
@@ -2658,21 +1405,8 @@ class DesktopInfoPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: isDark ? Colors.white : const Color(0xFF0A2540),
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF7A8FA6),
-                  ),
-                ),
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF061626))),
+                Text(sub, style: const TextStyle(fontSize: 11.5, color: Color(0xFF7A8FA6))),
               ],
             ),
           ),
