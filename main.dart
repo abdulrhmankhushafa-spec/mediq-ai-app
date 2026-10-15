@@ -8,9 +8,6 @@ void main() {
   runApp(const MediqAiApp());
 }
 
-// ============================================================================
-// 1. مدير الحالة والعمليات الخلفية (App Backend & State)
-// ============================================================================
 class AppController extends ChangeNotifier {
   bool isDarkMode = false;
   String language = 'العربية';
@@ -67,23 +64,6 @@ class AppController extends ChangeNotifier {
         '4. تناول الأطعمة الحارة أو الدهنية بكثرة.',
       ],
       'footer': 'للحصول على تشخيص دقيق ووصفة علاجية، يرجى مراجعة الطبيب المختص.',
-    },
-    {
-      'id': 'anemia',
-      'title': 'أعراض فقر الدم (الأنيميا)',
-      'subtitle': 'التعب والإرهاق المستمر وشحوب الجلد...',
-      'time': 'أمس 10:25',
-      'icon': Icons.bloodtype_rounded,
-      'isFavorite': true,
-      'question': 'ما هي أعراض فقر الدم؟',
-      'answerIntro': 'أعراض فقر الدم تختلف حسب الشدة، ولكن تشمل الشائع منها:',
-      'bullets': [
-        'التعب المستمر وضعف عام في النشاط البدني.',
-        'شحوب ملاحظ في الوجه والشفاه والأظافر.',
-        'الدوخة والشعور بالدوار المتكرر والصداع.',
-        'برودة الأطراف وخفقان القلب مع أقل مجهود.',
-      ],
-      'footer': 'يتم تأخيص فقر الدم بدقة عبر تحليل صورة الدم الكاملة (CBC) وفحص المخزون.',
     },
   ];
 
@@ -142,9 +122,6 @@ class AppController extends ChangeNotifier {
 
 final AppController appController = AppController();
 
-// ============================================================================
-// 2. تطبيق المادة والثيمات الفاخرة
-// ============================================================================
 class MediqAiApp extends StatelessWidget {
   const MediqAiApp({super.key});
 
@@ -198,9 +175,6 @@ class MediqAiApp extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// 3. رسومات الأشكال والشعارات الاحترافية (Custom Painters)
-// ============================================================================
 class MediqLogo extends StatelessWidget {
   final double size;
   final bool showText;
@@ -275,7 +249,6 @@ class MediqLogo extends StatelessWidget {
   }
 }
 
-// موجة نبض القلب المتحركة
 class AnimatedEcgWave extends StatefulWidget {
   final double width;
   final double height;
@@ -303,7 +276,7 @@ class _AnimatedEcgWaveState extends State<AnimatedEcgWave> with SingleTickerProv
       height: widget.height,
       child: AnimatedBuilder(
         animation: _ctrl,
-        builder: (_, __) => CustomPainter(painter: EcgPainter(progress: _ctrl.value, color: widget.color)),
+        builder: (_, __) => CustomPaint(painter: EcgPainter(progress: _ctrl.value, color: widget.color)),
       ),
     );
   }
@@ -342,9 +315,6 @@ class EcgPainter extends CustomPainter {
   bool shouldRepaint(covariant EcgPainter old) => old.progress != progress;
 }
 
-// ============================================================================
-// 4. شاشة البداية (Splash Screen)
-// ============================================================================
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -411,9 +381,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-// ============================================================================
-// 5. الهيكل الرئيسي المتجاوب (Main Shell)
-// ============================================================================
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -517,9 +484,6 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-// ============================================================================
-// 6. الشاشة الرئيسية المحسنة (Home Screen)
-// ============================================================================
 class HomeScreen extends StatelessWidget {
   final Function(Map<String, dynamic>) onOpenChat;
   final VoidCallback onNewChat;
@@ -558,7 +522,6 @@ class HomeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                // بطاقة الاتصال المحلي الفاخرة
                 InkWell(
                   onTap: () => appController.toggleServerStatus(),
                   borderRadius: BorderRadius.circular(16),
@@ -603,8 +566,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-
-                // شريط البحث المطور
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
@@ -626,8 +587,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-
-                // زر محادثة جديدة الاحترافي
                 InkWell(
                   onTap: onNewChat,
                   borderRadius: BorderRadius.circular(16),
@@ -649,8 +608,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
-
-                // عنوان المحادثات
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -666,14 +623,11 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-
                 if (chats.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(40.0),
                     child: Center(child: Text('لا توجد محادثات مطابقة', style: TextStyle(color: Colors.grey))),
                   ),
-
-                // قائمة المحادثات
                 ...chats.map((chat) {
                   final isFav = chat['isFavorite'] == true;
                   return Container(
@@ -723,9 +677,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// 7. القائمة الجانبية الداكنة الفاخرة (Sidebar Drawer)
-// ============================================================================
 class SidebarDrawer extends StatelessWidget {
   final VoidCallback onNewChat;
   final VoidCallback onSelectSettings;
@@ -870,9 +821,6 @@ class SidebarDrawer extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// 8. شاشة المحادثة التفاعلية (Chat Screen)
-// ============================================================================
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> chatData;
   final bool embedded;
@@ -887,7 +835,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _ctrl = TextEditingController();
   final List<Map<String, dynamic>> _exchanges = [];
   bool _loading = false;
-  int _reaction = 0; // 1: like, -1: dislike
+  int _reaction = 0;
 
   void _send([String? preset]) async {
     final txt = preset ?? _ctrl.text.trim();
@@ -1243,9 +1191,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// ============================================================================
-// 9. شاشة الإعدادات الاحترافية (Settings Screen)
-// ============================================================================
 class SettingsScreen extends StatelessWidget {
   final bool embedded;
   const SettingsScreen({super.key, this.embedded = false});
@@ -1324,9 +1269,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// 10. اللوحة الجانبية لأجهزة الحواسيب (Info Panel)
-// ============================================================================
 class InfoPanel extends StatelessWidget {
   const InfoPanel({super.key});
 
@@ -1415,4 +1357,3 @@ class InfoPanel extends StatelessWidget {
     );
   }
 }
-
