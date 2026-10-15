@@ -1,79 +1,39 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:async';
-import 'dart:math' as math;
-
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MediqAiApp());
-}
-
-class AppController extends ChangeNotifier {
-  bool isDarkMode = false;
-  String language = 'العربية';
-  String fontSizeLabel = 'متوسط';
-  bool saveChats = true;
-  bool notificationsEnabled = true;
-  bool isLocalServerConnected = true;
-  String selectedModel = 'Llama 3.1 (8B)';
-  String userName = 'مستخدم';
-  String userHandle = 'mediq_user';
-  String searchQuery = '';
-  bool showFavoritesOnly = false;
-
-  double get fontScale {
-    switch (fontSizeLabel) {
-      case 'صغير': return 0.88;
-      case 'كبير': return 1.15;
-      default: return 1.0;
-    }
-  }
-
-  final List<Map<String, dynamic>> chats = [
-    {
-      'id': 'diabetes',
-      'title': 'معلومات عن السكري',
-      'subtitle': 'السكري هو اضطراب في استقلاب الجلوكوز...',
-      'time': 'اليوم 09:24',
-      'icon': Icons.water_drop_rounded,
+  'icon': Icons.water_drop_rounded,
       'isFavorite': true,
       'question': 'ما هي أعراض مرض السكري؟',
-      'answerIntro': 'مرض السكري هو اضطراب في استقلاب الجلوكوز في الجسم، ويؤدي إلى ارتفاع مستوى السكر في الدم. من أبرز أعراضه:',
+      'answerIntro': 'مرض السكري هو اضطراب مزمن في استقلاب السكر بالجسم، ومن أبرز أعراضه السريرية:',
       'bullets': [
-        'زيادة العطش وجفاف الفم المستمر.',
-        'كثرة التبول خاصة خلال ساعات الليل.',
-        'الجوع الشديد رغم تناول وجبات طعام كافية.',
-        'فقدان الوزن غير المبرر وبدون حمية.',
-        'الإرهاق العام وتشوش الرؤية المؤقت.',
+        'العطش الشديد وجفاف الفم المستمر.',
+        'التبول المتكرر وخاصة خلال ساعات الليل.',
+        'الجوع المستمر وفقدان الوزن المفاجئ.',
+        'الإرهاق العام وتشوش مؤقت في الرؤية.',
       ],
-      'footer': 'من المهم استشارة الطبيب وإجراء فحص السكر التراكمي (HbA1c) للتشخيص الدقيق.',
+      'footer': 'يُرجى إجراء تحليل السكر التراكمي (HbA1c) ومراجعة الطبيب المختص.',
     },
     {
       'id': 'gastritis',
-      'title': 'أعراض التهاب المعدة',
-      'subtitle': 'التهاب المعدة يسبب ألماً في الجزء العلوي...',
+      'title': 'أسباب وأعراض التهاب المعدة',
+      'subtitle': 'ألماً في الجزء العلوي والعدوى البكتيرية...',
       'time': 'أمس 16:45',
       'icon': Icons.medical_information_rounded,
       'isFavorite': false,
       'question': 'ما هي أسباب التهاب المعدة؟',
-      'answerIntro': 'التهاب المعدة يمكن أن يحدث نتيجة عدة عوامل أساسية، منها:',
+      'answerIntro': 'يحدث التهاب المعدة نتيجة عدة عوامل رئيسية تؤثر على الغشاء المخاطي:',
       'bullets': [
-        '1. العدوى بجرثومة المعدة (هيليكوباكتر بيلوري).',
+        '1. العدوى بجرثومة المعدة (بيلوري).',
         '2. الإفراط في تناول المسكنات ومضادات الالتهاب.',
-        '3. الضغط النفسي الشديد والتوتر العصبي.',
-        '4. تناول الأطعمة الحارة أو الدهنية بكثرة.',
+        '3. الضغط العصبي الشديد والتوتر.',
+        '4. تناول الأطعمة الحارة والدهنية بكثرة.',
       ],
-      'footer': 'للحصول على تشخيص دقيق ووصفة علاجية، يرجى مراجعة الطبيب المختص.',
+      'footer': 'تجنب الأكل المتأخر وراجع الطبيب للفحص السريري.',
     },
   ];
 
   List<Map<String, dynamic>> get filteredChats {
-    return chats.where((chat) {
-      final matchesSearch = searchQuery.isEmpty ||
-          chat['title'].toString().contains(searchQuery) ||
-          chat['subtitle'].toString().contains(searchQuery);
-      final matchesFav = !showFavoritesOnly || (chat['isFavorite'] == true);
-      return matchesSearch && matchesFav;
+    return chats.where((c) {
+      final matchSearch = searchQuery.isEmpty || c['title'].toString().contains(searchQuery);
+      final matchFav = !showFavoritesOnly || (c['isFavorite'] == true);
+      return matchSearch && matchFav;
     }).toList();
   }
 
@@ -91,10 +51,7 @@ class AppController extends ChangeNotifier {
   void toggleNotifications() { notificationsEnabled = !notificationsEnabled; notifyListeners(); }
   void toggleFavorite(String id) {
     final idx = chats.indexWhere((c) => c['id'] == id);
-    if (idx != -1) {
-      chats[idx]['isFavorite'] = !(chats[idx]['isFavorite'] ?? false);
-      notifyListeners();
-    }
+    if (idx != -1) { chats[idx]['isFavorite'] = !(chats[idx]['isFavorite'] ?? false); notifyListeners(); }
   }
   void setSearchQuery(q) { searchQuery = q; notifyListeners(); }
   void setShowFavoritesOnly(v) { showFavoritesOnly = v; notifyListeners(); }
@@ -104,24 +61,27 @@ class AppController extends ChangeNotifier {
     return {
       'id': 'chat_${DateTime.now().millisecondsSinceEpoch}',
       'title': q.length > 25 ? '${q.substring(0, 25)}...' : q,
-      'subtitle': 'إجابة تحليلية من المساعد الطبي المحلي...',
+      'subtitle': 'رد تحليلي دقيق من نموذج ($selectedModel)...',
       'time': 'الآن',
       'icon': Icons.health_and_safety_rounded,
       'isFavorite': false,
       'question': q,
-      'answerIntro': 'بناءً على المعطيات الطبية لنموذج ($selectedModel) حول "$q":',
+      'answerIntro': 'تحليل الاستفسار الطبي ($q) عبر خادمك المحلي:',
       'bullets': [
-        'مراقبة الأعراض والراحة التامة للجسد.',
-        'الإكثار من السوائل والعصائر الطبيعية.',
-        'استشارة الطبيب فوراً في حال استمرار الأعراض.',
+        'أخذ قسط كافٍ من الراحة والابتعاد عن التوتر.',
+        'الترطيب المستمر بشرب الماء والسوائل.',
+        'مراجعة الطبيب المختص فورا في حال تفاقم الأعراض.',
       ],
-      'footer': 'تنبيه: هذه المعلومات تثقيفية ولا تغني عن استشارة الطبيب.',
+      'footer': 'تنبيه طبي: هذه المعلومات إرشادية وليست تشخيصاً نهائياً.',
     };
   }
 }
 
 final AppController appController = AppController();
 
+// ============================================================================
+// 2. تطبيق المادة والثيمات
+// ============================================================================
 class MediqAiApp extends StatelessWidget {
   const MediqAiApp({super.key});
 
@@ -138,25 +98,25 @@ class MediqAiApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFF4F7FC),
-            primaryColor: const Color(0xFF0066CC),
+            scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+            primaryColor: const Color(0xFF0284C7),
             cardColor: Colors.white,
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0066CC),
-              secondary: Color(0xFF00C6FF),
+              primary: Color(0xFF0284C7),
+              secondary: Color(0xFF06B6D4),
               surface: Colors.white,
             ),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF040E18),
-            primaryColor: const Color(0xFF00A8FF),
-            cardColor: const Color(0xFF0B1D30),
+            scaffoldBackgroundColor: const Color(0xFF030712),
+            primaryColor: const Color(0xFF38BDF8),
+            cardColor: const Color(0xFF0F172A),
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF00A8FF),
-              secondary: Color(0xFF00E1FF),
-              surface: Color(0xFF0B1D30),
+              primary: Color(0xFF38BDF8),
+              secondary: Color(0xFF22D3EE),
+              surface: const Color(0xFF0F172A),
             ),
           ),
           builder: (context, child) => Directionality(
@@ -175,12 +135,15 @@ class MediqAiApp extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// 3. الشعار والرسومات الاحترافية
+// ============================================================================
 class MediqLogo extends StatelessWidget {
   final double size;
   final bool showText;
   final bool forceDark;
 
-  const MediqLogo({super.key, this.size = 42, this.showText = true, this.forceDark = false});
+  const MediqLogo({super.key, this.size = 44, this.showText = true, this.forceDark = false});
 
   @override
   Widget build(BuildContext context) {
@@ -192,54 +155,46 @@ class MediqLogo extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(size * 0.28),
+            borderRadius: BorderRadius.circular(size * 0.3),
             gradient: const LinearGradient(
-              colors: [Color(0xFF00E1FF), Color(0xFF0055CC)],
+              colors: [Color(0xFF22D3EE), Color(0xFF0284C7), Color(0xFF1D4ED8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF00C6FF).withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
+              BoxShadow(color: const Color(0xFF0284C7).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
             ],
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(Icons.psychology_alt_rounded, color: Colors.white.withOpacity(0.25), size: size * 0.75),
+              Icon(Icons.psychology_rounded, color: Colors.white.withOpacity(0.3), size: size * 0.7),
               Container(
-                width: size * 0.52,
-                height: size * 0.52,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF061526),
-                  shape: BoxShape.circle,
-                ),
+                width: size * 0.5, height: size * 0.5,
+                decoration: const BoxDecoration(color: Color(0xFF0B0F19), shape: BoxShape.circle),
                 child: Icon(Icons.add_rounded, color: Colors.white, size: size * 0.35),
               ),
             ],
           ),
         ),
         if (showText) ...[
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               RichText(
                 text: TextSpan(
-                  style: TextStyle(fontSize: size * 0.42, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                  style: TextStyle(fontSize: size * 0.42, fontWeight: FontWeight.w900, letterSpacing: 0.6),
                   children: [
-                    TextSpan(text: 'MEDIQ ', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF061526))),
-                    const TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF00C6FF))),
+                    TextSpan(text: 'MEDIQ ', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A))),
+                    const TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF38BDF8))),
                   ],
                 ),
               ),
               Text(
                 'مساعدك الطبي الذكي',
-                style: TextStyle(fontSize: size * 0.24, color: isDark ? Colors.white70 : const Color(0xFF5A7184), fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: size * 0.24, color: isDark ? Colors.white70 : const Color(0xFF64748B), fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -253,7 +208,7 @@ class AnimatedEcgWave extends StatefulWidget {
   final double width;
   final double height;
   final Color color;
-  const AnimatedEcgWave({super.key, this.width = 220, this.height = 45, this.color = const Color(0xFF00E1FF)});
+  const AnimatedEcgWave({super.key, this.width = 220, this.height = 45, this.color = const Color(0xFF38BDF8)});
 
   @override
   State<AnimatedEcgWave> createState() => _AnimatedEcgWaveState();
@@ -272,8 +227,7 @@ class _AnimatedEcgWaveState extends State<AnimatedEcgWave> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.width,
-      height: widget.height,
+      width: widget.width, height: widget.height,
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (_, __) => CustomPaint(painter: EcgPainter(progress: _ctrl.value, color: widget.color)),
@@ -289,32 +243,35 @@ class EcgPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paintBase = Paint()..color = color.withOpacity(0.2)..strokeWidth = 2..style = PaintingStyle.stroke;
-    final paintGlow = Paint()..color = color..strokeWidth = 2.5..style = PaintingStyle.stroke;
+    final pBase = Paint()..color = color.withOpacity(0.25)..strokeWidth = 2..style = PaintingStyle.stroke;
+    final pGlow = Paint()..color = color..strokeWidth = 2.8..style = PaintingStyle.stroke;
 
     final path = Path();
     final mid = size.height / 2;
     path.moveTo(0, mid);
     path.lineTo(size.width * 0.3, mid);
-    path.lineTo(size.width * 0.36, mid - 6);
-    path.lineTo(size.width * 0.41, mid + 6);
-    path.lineTo(size.width * 0.46, mid - 24);
-    path.lineTo(size.width * 0.51, mid + 20);
-    path.lineTo(size.width * 0.57, mid - 8);
-    path.lineTo(size.width * 0.63, mid);
+    path.lineTo(size.width * 0.35, mid - 7);
+    path.lineTo(size.width * 0.4, mid + 7);
+    path.lineTo(size.width * 0.45, mid - 26);
+    path.lineTo(size.width * 0.5, mid + 22);
+    path.lineTo(size.width * 0.56, mid - 10);
+    path.lineTo(size.width * 0.62, mid);
     path.lineTo(size.width, mid);
 
-    canvas.drawPath(path, paintBase);
+    canvas.drawPath(path, pBase);
     final metric = path.computeMetrics().first;
     final len = metric.length * 0.35;
     final start = (metric.length * progress) - (len / 2);
     final extract = metric.extractPath(math.max(0, start), math.min(metric.length, start + len));
-    canvas.drawPath(extract, paintGlow);
+    canvas.drawPath(extract, pGlow);
   }
   @override
   bool shouldRepaint(covariant EcgPainter old) => old.progress != progress;
 }
 
+// ============================================================================
+// 4. شاشة البداية (Splash Screen)
+// ============================================================================
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -340,9 +297,8 @@ class _SplashScreenState extends State<SplashScreen> {
           width: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF030D19), Color(0xFF09243E), Color(0xFF030D19)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              colors: [Color(0xFF020617), Color(0xFF0F172A), Color(0xFF020617)],
+              begin: Alignment.topCenter, end: Alignment.bottomCenter,
             ),
           ),
           child: SafeArea(
@@ -350,25 +306,25 @@ class _SplashScreenState extends State<SplashScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(flex: 2),
-                const MediqLogo(size: 130, showText: false),
+                const MediqLogo(size: 135, showText: false),
                 const SizedBox(height: 28),
                 RichText(
                   text: const TextSpan(
                     style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 1.2),
                     children: [
                       TextSpan(text: 'MEDIQ ', style: TextStyle(color: Colors.white)),
-                      TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF00E1FF))),
+                      TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF38BDF8))),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
                 const Text('Your Medical AI Assistant', style: TextStyle(color: Colors.white70, fontSize: 14)),
                 const SizedBox(height: 24),
-                const Text('اسأل ... افهم ... تعلّم', style: TextStyle(color: Color(0xFF00E1FF), fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text('اسأل ... افهم ... تعلّم', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 21, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 32),
-                const AnimatedEcgWave(width: 240, height: 45),
+                const AnimatedEcgWave(width: 250, height: 48),
                 const Spacer(flex: 2),
-                const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF00E1FF))),
+                const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF38BDF8))),
                 const SizedBox(height: 16),
                 const Text('جاري تهيئة المساعد الطبي الذكي...', style: TextStyle(color: Colors.white60, fontSize: 13)),
                 const SizedBox(height: 40),
@@ -381,6 +337,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
+// ============================================================================
+// 5. الهيكل الرئيسي المتجاوب
+// ============================================================================
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -418,7 +377,7 @@ class _MainShellState extends State<MainShell> {
 
     if (isDesktop) {
       final activeChat = appController.chats.firstWhere(
-        (c) => c['id'] == (_selectedChatId ?? 'anemia'),
+        (c) => c['id'] == (_selectedChatId ?? 'diabetes'),
         orElse: () => {'id': 'new', 'title': 'محادثة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''},
       );
       return Scaffold(
@@ -436,7 +395,7 @@ class _MainShellState extends State<MainShell> {
             Container(
               width: 310,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF091828) : const Color(0xFFF8FAFC),
+                color: isDark ? const Color(0xFF090D16) : const Color(0xFFF8FAFC),
                 border: Border(right: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200)),
               ),
               child: const InfoPanel(),
@@ -448,7 +407,7 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       drawer: Drawer(
-        backgroundColor: const Color(0xFF051220),
+        backgroundColor: const Color(0xFF030712),
         child: SidebarDrawer(
           onNewChat: () { Navigator.pop(context); _newChat(); },
           onSelectSettings: () { Navigator.pop(context); setState(() => _navIndex = 3); },
@@ -469,9 +428,9 @@ class _MainShellState extends State<MainShell> {
         currentIndex: _navIndex,
         onTap: (i) => setState(() => _navIndex = i),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: isDark ? const Color(0xFF081726) : Colors.white,
-        selectedItemColor: const Color(0xFF0066CC),
-        unselectedItemColor: const Color(0xFF7A8FA6),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        selectedItemColor: const Color(0xFF0284C7),
+        unselectedItemColor: const Color(0xFF64748B),
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
@@ -484,6 +443,9 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
+// ============================================================================
+// 6. الشاشة الرئيسية المحسنة
+// ============================================================================
 class HomeScreen extends StatelessWidget {
   final Function(Map<String, dynamic>) onOpenChat;
   final VoidCallback onNewChat;
@@ -505,15 +467,15 @@ class HomeScreen extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Scaffold.maybeOf(context)?.openDrawer(),
                   child: const CircleAvatar(
-                    radius: 19,
-                    backgroundColor: Color(0xFF061626),
-                    child: Icon(Icons.person_rounded, color: Color(0xFF00E1FF)),
+                    radius: 20,
+                    backgroundColor: Color(0xFF0284C7),
+                    child: Icon(Icons.person_rounded, color: Colors.white),
                   ),
                 ),
                 const MediqLogo(size: 38),
                 IconButton(
                   onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
-                  icon: Icon(Icons.menu_open_rounded, color: isDark ? Colors.white : const Color(0xFF061626), size: 28),
+                  icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : const Color(0xFF0F172A), size: 28),
                 ),
               ],
             ),
@@ -522,6 +484,7 @@ class HomeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
+                // بطاقة حالة الخادم المحلي
                 InkWell(
                   onTap: () => appController.toggleServerStatus(),
                   borderRadius: BorderRadius.circular(16),
@@ -529,10 +492,10 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: isDark ? [const Color(0xFF0C2540), const Color(0xFF061526)] : [const Color(0xFFE3F2FD), const Color(0xFFF4F9FD)],
+                        colors: isDark ? [const Color(0xFF1E293B), const Color(0xFF0F172A)] : [const Color(0xFFE0F2FE), const Color(0xFFF0F9FF)],
                       ),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.3)),
+                      border: Border.all(color: const Color(0xFF0284C7).withOpacity(0.35)),
                     ),
                     child: Row(
                       children: [
@@ -550,22 +513,24 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Text(
                                 appController.isLocalServerConnected ? 'يعمل محلياً (${appController.selectedModel})' : 'الخادم المحلي متوقف',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : const Color(0xFF061626)),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                appController.isLocalServerConnected ? 'المساعد الطبي متصل وجاهز للرد الفوري' : 'اضغط لإعادة الاتصال بالخادم',
-                                style: TextStyle(fontSize: 11.5, color: isDark ? Colors.white70 : const Color(0xFF5A7184)),
+                                appController.isLocalServerConnected ? 'جاهز للإجابة السريعة بدون إنترنت' : 'اضغط لإعادة تشغيل الاتصال المحلي',
+                                style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.dns_rounded, color: Color(0xFF0078D4), size: 24),
+                        const Icon(Icons.dns_rounded, color: Color(0xFF0284C7), size: 26),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 14),
+
+                // شريط البحث المطور
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
@@ -575,9 +540,9 @@ class HomeScreen extends StatelessWidget {
                   child: TextField(
                     onChanged: appController.setSearchQuery,
                     decoration: InputDecoration(
-                      hintText: 'ابحث في المحادثات الطبية...',
-                      hintStyle: const TextStyle(color: Color(0xFF9FB1C1), fontSize: 14),
-                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0066CC)),
+                      hintText: 'ابحث في محادثاتك الطبية...',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0284C7)),
                       suffixIcon: appController.searchQuery.isNotEmpty
                           ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => appController.setSearchQuery(''))
                           : null,
@@ -587,15 +552,17 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
+
+                // زر محادثة جديدة بارز
                 InkWell(
                   onTap: onNewChat,
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF0078D4), Color(0xFF004BA0)]),
+                      gradient: const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF0369A1)]),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: const Color(0xFF0078D4).withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 5))],
+                      boxShadow: [BoxShadow(color: const Color(0xFF0284C7).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -608,12 +575,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
+
+                // ترويسة المحادثات
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       appController.showFavoritesOnly ? 'المحادثات المفضلة ⭐' : 'المحادثات الأخيرة',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626)),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                     ),
                     TextButton.icon(
                       onPressed: () => appController.setShowFavoritesOnly(!appController.showFavoritesOnly),
@@ -623,11 +592,13 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
+
                 if (chats.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(40.0),
                     child: Center(child: Text('لا توجد محادثات مطابقة', style: TextStyle(color: Colors.grey))),
                   ),
+
                 ...chats.map((chat) {
                   final isFav = chat['isFavorite'] == true;
                   return Container(
@@ -643,21 +614,21 @@ class HomeScreen extends StatelessWidget {
                       leading: Container(
                         width: 48, height: 48,
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF103154) : const Color(0xFFE3F2FD),
+                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE0F2FE),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(chat['icon'] as IconData, color: const Color(0xFF0078D4), size: 26),
+                        child: Icon(chat['icon'] as IconData, color: const Color(0xFF0284C7), size: 26),
                       ),
-                      title: Text(chat['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF061626))),
+                      title: Text(chat['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(chat['subtitle'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF7A8FA6))),
+                        child: Text(chat['subtitle'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                       ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(chat['time'], style: const TextStyle(fontSize: 10.5, color: Color(0xFF9FB1C1))),
+                          Text(chat['time'], style: const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8))),
                           const SizedBox(height: 6),
                           GestureDetector(
                             onTap: () => appController.toggleFavorite(chat['id']),
@@ -677,6 +648,9 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// 7. القائمة الجانبية المحدثة
+// ============================================================================
 class SidebarDrawer extends StatelessWidget {
   final VoidCallback onNewChat;
   final VoidCallback onSelectSettings;
@@ -688,7 +662,7 @@ class SidebarDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF051220),
+      color: const Color(0xFF030712),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -703,14 +677,14 @@ class SidebarDrawer extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
                     const CircleAvatar(
                       radius: 20,
-                      backgroundColor: Color(0xFF0078D4),
+                      backgroundColor: Color(0xFF0284C7),
                       child: Icon(Icons.person, color: Colors.white),
                     ),
                     const SizedBox(width: 12),
@@ -718,8 +692,8 @@ class SidebarDrawer extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(appController.userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(appController.userHandle, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          Text(appController.userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5)),
+                          Text(appController.userHandle, style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
                         ],
                       ),
                     ),
@@ -733,7 +707,7 @@ class SidebarDrawer extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF0078D4), Color(0xFF004BA0)]),
+                    gradient: const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF0369A1)]),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
@@ -756,9 +730,9 @@ class SidebarDrawer extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0B1E33),
+                  color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF00C6FF).withOpacity(0.2)),
+                  border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.25)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -773,7 +747,7 @@ class SidebarDrawer extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    const Text('النموذج متصل بالشبكة المحلية (بدون إنترنت)', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                    const Text('يعمل بدون إنترنت وبخصوصية تامة', style: TextStyle(color: Colors.white70, fontSize: 11)),
                   ],
                 ),
               ),
@@ -783,12 +757,12 @@ class SidebarDrawer extends StatelessWidget {
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(12)),
                 child: Row(
                   children: [
-                    const Icon(Icons.memory_rounded, color: Color(0xFF00C6FF), size: 20),
+                    const Icon(Icons.memory_rounded, color: Color(0xFF38BDF8), size: 20),
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('النموذج المستخدم', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                        const Text('النموذج النشط', style: TextStyle(color: Colors.white70, fontSize: 10)),
                         Text(appController.selectedModel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
@@ -799,7 +773,7 @@ class SidebarDrawer extends StatelessWidget {
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('MEDIQ AI v1.0.0', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                  Text('MEDIQ AI v1.2.0', style: TextStyle(color: Colors.white38, fontSize: 11)),
                   Icon(Icons.verified_rounded, color: Colors.white38, size: 15),
                 ],
               ),
@@ -821,6 +795,9 @@ class SidebarDrawer extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// 8. شاشة المحادثة التفاعلية
+// ============================================================================
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> chatData;
   final bool embedded;
@@ -866,7 +843,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.chatData['title'] ?? 'محادثة طبية', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626))),
+                  Text(widget.chatData['title'] ?? 'محادثة طبية', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                   Row(
                     children: [
                       Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
@@ -922,7 +899,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: [
                               SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
                               SizedBox(width: 12),
-                              Text('جاري تحليل السؤال الطبي...', style: TextStyle(color: Color(0xFF0078D4), fontSize: 13)),
+                              Text('جاري تحليل السؤال الطبي...', style: TextStyle(color: Color(0xFF0284C7), fontSize: 13)),
                             ],
                           ),
                         ),
@@ -949,21 +926,18 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             const MediqLogo(size: 70, showText: false),
             const SizedBox(height: 14),
-            Text('MEDIQ AI', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF061626))),
-            const Text('مساعدك الطبي الذكي', style: TextStyle(fontSize: 14, color: Color(0xFF5A7184))),
+            Text('MEDIQ AI', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF0F172A))),
+            const Text('مساعدك الطبي الذكي', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
             const SizedBox(height: 24),
-            Text('كيف يمكنني مساعدتك اليوم؟', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626))),
+            Text('كيف يمكنني مساعدتك اليوم؟', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A))),
             const SizedBox(height: 24),
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.center,
+              spacing: 12, runSpacing: 12, alignment: WrapAlignment.center,
               children: list.map((item) => InkWell(
                 onTap: () => _send((item['t'] as String).replaceAll('\n', ' ')),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 160,
-                  padding: const EdgeInsets.all(16),
+                  width: 160, padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
@@ -972,9 +946,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(item['i'] as IconData, color: const Color(0xFF0078D4), size: 24),
+                      Icon(item['i'] as IconData, color: const Color(0xFF0284C7), size: 24),
                       const SizedBox(height: 12),
-                      Text(item['t'] as String, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF061626))),
+                      Text(item['t'] as String, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                     ],
                   ),
                 ),
@@ -993,25 +967,23 @@ class _ChatScreenState extends State<ChatScreen> {
         constraints: const BoxConstraints(maxWidth: 330),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(
-          color: Color(0xFFD0EBFF),
+          color: Color(0xFFBAE6FD),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(18),
-            topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(18),
-            bottomRight: Radius.circular(4),
+            topLeft: Radius.circular(18), topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18), bottomRight: Radius.circular(4),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(txt, style: const TextStyle(color: Color(0xFF061626), fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(txt, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 4),
             const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.done_all_rounded, size: 14, color: Color(0xFF0078D4)),
+                Icon(Icons.done_all_rounded, size: 14, color: Color(0xFF0284C7)),
                 SizedBox(width: 4),
-                Text('09:24 م', style: TextStyle(fontSize: 10, color: Color(0xFF5A7184))),
+                Text('09:24 م', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
               ],
             ),
           ],
@@ -1038,7 +1010,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Row(
                   children: [
-                    Text('MEDIQ AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF061626))),
+                    Text('MEDIQ AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                     const SizedBox(width: 8),
                     const Text('10:25 م', style: TextStyle(fontSize: 11, color: Colors.grey)),
                   ],
@@ -1051,7 +1023,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('• ', style: TextStyle(color: Color(0xFF0078D4), fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Text('• ', style: TextStyle(color: Color(0xFF0284C7), fontWeight: FontWeight.bold, fontSize: 16)),
                       Expanded(child: Text(b, style: TextStyle(fontSize: 13.5, height: 1.5, color: isDark ? Colors.white70 : const Color(0xFF334155)))),
                     ],
                   ),
@@ -1060,23 +1032,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF102C48) : const Color(0xFFF0F7FF),
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0F9FF),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.2)),
+                    border: Border.all(color: const Color(0xFF0284C7).withOpacity(0.25)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.info_rounded, color: Color(0xFF0078D4), size: 18),
+                      const Icon(Icons.info_rounded, color: Color(0xFF0284C7), size: 18),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(data['footer'], style: TextStyle(fontSize: 12.5, height: 1.5, color: isDark ? Colors.white : const Color(0xFF061626)))),
+                      Expanded(child: Text(data['footer'], style: TextStyle(fontSize: 12.5, height: 1.5, color: isDark ? Colors.white : const Color(0xFF0F172A)))),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 8, runSpacing: 8,
                   children: [
                     _actionBtn(
                       icon: _reaction == 1 ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
@@ -1089,8 +1060,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       onTap: () => setState(() => _reaction = _reaction == -1 ? 0 : -1),
                     ),
                     _actionBtn(
-                      icon: Icons.copy_rounded,
-                      label: 'نسخ الإجابة',
+                      icon: Icons.copy_rounded, label: 'نسخ الإجابة',
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: '${data['answerIntro']}\n${bullets.join("\n")}'));
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الإجابة بنجاح ✓'), duration: Duration(seconds: 2)));
@@ -1115,14 +1085,14 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF0078D4).withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+          color: active ? const Color(0xFF0284C7).withOpacity(0.15) : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: active ? const Color(0xFF0078D4) : Colors.grey.shade300),
+          border: Border.all(color: active ? const Color(0xFF0284C7) : Colors.grey.shade300),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: active ? const Color(0xFF0078D4) : const Color(0xFF5A7184)),
+            Icon(icon, size: 15, color: active ? const Color(0xFF0284C7) : const Color(0xFF64748B)),
             if (label.isNotEmpty) ...[
               const SizedBox(width: 6),
               Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
@@ -1150,7 +1120,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Container(
                 width: 46, height: 46,
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [Color(0xFF0088FF), Color(0xFF0055CC)]),
+                  gradient: LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF0369A1)]),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
@@ -1161,7 +1131,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF040E18) : const Color(0xFFF4F7FC),
+                  color: isDark ? const Color(0xFF030712) : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                 ),
@@ -1173,13 +1143,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         onSubmitted: (_) => _send(),
                         decoration: const InputDecoration(
                           hintText: 'اكتب سؤالك الطبي هنا...',
-                          hintStyle: TextStyle(color: Color(0xFF9FB1C1), fontSize: 13.5),
+                          hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.mic_none_rounded, color: Color(0xFF5A7184), size: 20)),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.image_outlined, color: Color(0xFF5A7184), size: 20)),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.mic_none_rounded, color: Color(0xFF64748B), size: 20)),
+                    IconButton(onPressed: () {}, icon: const Icon(Icons.image_outlined, color: Color(0xFF64748B), size: 20)),
                   ],
                 ),
               ),
@@ -1191,6 +1161,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+// ============================================================================
+// 9. شاشة الإعدادات المحدثة
+// ============================================================================
 class SettingsScreen extends StatelessWidget {
   final bool embedded;
   const SettingsScreen({super.key, this.embedded = false});
@@ -1205,7 +1178,7 @@ class SettingsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: !embedded,
-        title: Text('الإعدادات', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF061626), fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text('الإعدادات', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -1215,10 +1188,10 @@ class SettingsScreen extends StatelessWidget {
             decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(radius: 24, backgroundColor: Color(0xFF0078D4), child: Icon(Icons.person, color: Colors.white, size: 28)),
+              leading: const CircleAvatar(radius: 24, backgroundColor: Color(0xFF0284C7), child: Icon(Icons.person, color: Colors.white, size: 28)),
               title: Text(appController.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(appController.userHandle, style: const TextStyle(color: Color(0xFF7A8FA6), fontSize: 13)),
-              trailing: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF0078D4)),
+              subtitle: Text(appController.userHandle, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+              trailing: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF0284C7)),
             ),
           ),
           const SizedBox(height: 24),
@@ -1254,14 +1227,14 @@ class SettingsScreen extends StatelessWidget {
       decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: const Color(0xFF0078D4), size: 22),
+        leading: Icon(icon, color: const Color(0xFF0284C7), size: 22),
         title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(trailing, style: const TextStyle(fontSize: 13, color: Color(0xFF0078D4), fontWeight: FontWeight.bold)),
+            Text(trailing, style: const TextStyle(fontSize: 13, color: Color(0xFF0284C7), fontWeight: FontWeight.bold)),
             const SizedBox(width: 6),
-            const Icon(Icons.sync_alt_rounded, size: 15, color: Color(0xFF9FB1C1)),
+            const Icon(Icons.sync_alt_rounded, size: 15, color: Color(0xFF94A3B8)),
           ],
         ),
       ),
@@ -1269,6 +1242,9 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// 10. اللوحة الجانبية
+// ============================================================================
 class InfoPanel extends StatelessWidget {
   const InfoPanel({super.key});
 
@@ -1281,16 +1257,16 @@ class InfoPanel extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF102C48) : const Color(0xFFEBF5FF),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE0F2FE),
             borderRadius: BorderRadius.circular(18),
           ),
           child: Column(
             children: [
-              const Icon(Icons.monitor_heart_rounded, color: Color(0xFF00B4DB), size: 48),
+              const Icon(Icons.monitor_heart_rounded, color: Color(0xFF38BDF8), size: 48),
               const SizedBox(height: 12),
-              Text('مساعدك الطبي الذكي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : const Color(0xFF061626))),
+              Text('مساعدك الطبي الذكي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : const Color(0xFF0F172A))),
               const SizedBox(height: 6),
-              const Text('إجابات دقيقة وموثوقة لأسئلتك الطبية.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5, color: Color(0xFF5A7184))),
+              const Text('إجابات دقيقة وموثوقة لأسئلتك الطبية.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B))),
             ],
           ),
         ),
@@ -1303,29 +1279,29 @@ class InfoPanel extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF102C48) : const Color(0xFFE6F3FF),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0F9FF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.25)),
+            border: Border.all(color: const Color(0xFF0284C7).withOpacity(0.25)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: const [
-                  Icon(Icons.info_outline, color: Color(0xFF0078D4), size: 20),
+                  Icon(Icons.info_outline, color: Color(0xFF0284C7), size: 20),
                   SizedBox(width: 8),
-                  Text('تنويه مهم', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0078D4), fontSize: 14)),
+                  Text('تنويه مهم', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0284C7), fontSize: 14)),
                 ],
               ),
               const SizedBox(height: 10),
-              Text('المعلومات المقدمة للتثقيف الطبي فقط، ولا تغني عن استشارة الطبيب المختص.', style: TextStyle(fontSize: 12, height: 1.6, color: isDark ? Colors.white70 : const Color(0xFF061626))),
+              Text('المعلومات المقدمة للتثقيف الطبي فقط، ولا تغني عن استشارة الطبيب المختص.', style: TextStyle(fontSize: 12, height: 1.6, color: isDark ? Colors.white70 : const Color(0xFF0F172A))),
             ],
           ),
         ),
         const SizedBox(height: 24),
-        const Center(child: AnimatedEcgWave(width: 180, height: 32, color: Color(0xFF0078D4))),
+        const Center(child: AnimatedEcgWave(width: 180, height: 32, color: Color(0xFF0284C7))),
         const SizedBox(height: 8),
-        Center(child: Text('معاً نحو صحة أفضل', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF061626), fontSize: 13))),
+        Center(child: Text('معاً نحو صحة أفضل', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 13))),
         const SizedBox(height: 12),
         const Center(child: MediqLogo(size: 36, showText: true)),
       ],
@@ -1339,16 +1315,16 @@ class InfoPanel extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: isDark ? const Color(0xFF102C48) : const Color(0xFFE6F4FA), borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: const Color(0xFF0078D4), size: 20),
+            decoration: BoxDecoration(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: const Color(0xFF0284C7), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF061626))),
-                Text(sub, style: const TextStyle(fontSize: 11.5, color: Color(0xFF7A8FA6))),
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A))),
+                Text(sub, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B))),
               ],
             ),
           ),
@@ -1357,3 +1333,4 @@ class InfoPanel extends StatelessWidget {
     );
   }
 }
+
