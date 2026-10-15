@@ -5,11 +5,7 @@ import 'dart:math' as math;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ),
-  );
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
   runApp(const MediqAiApp());
 }
 
@@ -20,20 +16,39 @@ class AppController extends ChangeNotifier {
   bool saveChats = true;
   bool notificationsEnabled = true;
   bool isLocalServerConnected = true;
-  String selectedModel = 'Llama 3.1 (8B)';
+  String selectedModel = 'Llama 3.1 (8B) - Med';
   String userName = 'د. مستخدم';
-  String userHandle = '@mediq_user';
+  String userHandle = '@mediq_doctor';
   String searchQuery = '';
   bool showFavoritesOnly = false;
+  String pinCode = '';
+  bool isLocked = false;
+
+  // Medical ID & Vitals
+  Map<String, String> medicalId = {
+    'name': 'د. مستخدم',
+    'blood': 'O+',
+    'allergies': 'لا توجد حساسية معروفة',
+    'conditions': 'لا توجد أمراض مزمنة',
+    'contact': 'طوارئ: 997',
+  };
+
+  List<Map<String, dynamic>> vitalsLog = [
+    {'date': 'اليوم', 'type': 'ضغط الدم', 'val': '120/80', 'status': 'طبيعي'},
+    {'date': 'أمس', 'type': 'نبض القلب', 'val': '74 نبضة/د', 'status': 'طبيعي'},
+    {'date': 'قبل يومين', 'type': 'السكر الصائم', 'val': '98 mg/dl', 'status': 'طبيعي'},
+  ];
+
+  List<Map<String, dynamic>> medsList = [
+    {'name': 'فيتامين D3', 'time': '09:00 ص', 'status': false},
+    {'name': 'أسبرين أطفال', 'time': '02:00 م', 'status': true},
+  ];
 
   double get fontScale {
     switch (fontSizeLabel) {
-      case 'صغير':
-        return 0.90;
-      case 'كبير':
-        return 1.14;
-      default:
-        return 1.0;
+      case 'صغير': return 0.90;
+      case 'كبير': return 1.14;
+      default: return 1.0;
     }
   }
 
@@ -41,66 +56,40 @@ class AppController extends ChangeNotifier {
     {
       'id': 'diabetes',
       'category': 'الغدد والسكري',
-      'title': 'معلومات شاملة عن السكري',
-      'subtitle': 'السكري هو اضطراب مزمن في استقلاب الجلوكوز...',
+      'title': 'أعراض وتشخيص السكري',
+      'subtitle': 'اضطراب مزمن في استقلاب الجلوكوز...',
       'time': 'اليوم 09:24 م',
       'icon': Icons.water_drop_rounded,
       'color': 0xFF0096C7,
       'isFavorite': true,
       'question': 'ما هي أبرز أعراض مرض السكري وكيف يتم تشخيصه؟',
-      'answerIntro':
-          'مرض السكري هو اضطراب أيضي يؤدي إلى ارتفاع مستويات الجلوكوز في الدم نتيجة نقص الأنسولين أو ضعف استجابة الخلايا له. من أبرز أعراضه السريرية:',
+      'answerIntro': 'مرض السكري هو اضطراب أيضي يؤدي لارتفاع السكر في الدم. من أبرز أعراضه:',
       'bullets': [
-        'زيادة العطش بشكل مستمر وجفاف الفم والحلق.',
-        'كثرة التبول خاصة خلال ساعات الليل.',
-        'الشعور بالجوع الشديد رغم تناول الوجبات بانتظام.',
-        'فقدان الوزن غير المبرر والشعور بالإجهاد السريع.',
-        'تشوش الرؤية المؤقت وبطء التئام الجروح السطحية.',
+        'زيادة العطش المستمر وجفاف الفم.',
+        'كثرة التبول وخاصة ليلاً.',
+        'الجوع الشديد وفقدان الوزن غير المبرر.',
+        'الإرهاق السريع وتشوش الرؤية.',
       ],
-      'footer':
-          'يُنصح بإجراء فحص السكر الصائم وفحص السكر التراكمي (HbA1c) ومراجعة طبيب الباطنية والغدد الصماء لتحديد الخطة العلاجية.',
+      'footer': 'يُنصح بإجراء فحص السكر التراكمي (HbA1c) ومراجعة طبيب الغدد الصماء.',
     },
     {
       'id': 'gastritis',
       'category': 'الجهاز الهضمي',
-      'title': 'أعراض وأسباب التهاب المعدة',
-      'subtitle': 'التهاب بطانة المعدة يسبب ألماً وحرقاناً علوياً...',
+      'title': 'التهاب المعدة والأسباب',
+      'subtitle': 'تهيج وتآكل البطانة المخاطية...',
       'time': 'أمس 04:45 م',
       'icon': Icons.medical_information_rounded,
       'color': 0xFF10B981,
       'isFavorite': false,
       'question': 'ما هي أسباب التهاب المعدة المتكرر؟',
-      'answerIntro':
-          'يحدث التهاب المعدة نتيجة تهيج أو تآكل البطانة المخاطية التي تحمي جدار المعدة من العصارة الهضمية، وأهم أسبابه:',
+      'answerIntro': 'يحدث التهاب المعدة نتيجة تهيج البطانة المخاطية، وأهم أسبابه:',
       'bullets': [
-        'العدوى البكتيرية بجرثومة المعدة (Helicobacter pylori).',
-        'الإفراط في استخدام المسكنات ومضادات الالتهاب غير الستيرويدية.',
-        'التوتر العصبي الشديد والضغوط النفسية المستمرة.',
-        'تناول الأطعمة الدسمة والحارة والمشروبات الغازية بكثرة.',
+        'العدوى بجرثومة المعدة (H. pylori).',
+        'الإفراط في تناول المسكنات (NSAIDs).',
+        'التوتر العصبي والضغط النفسي الشديد.',
+        'تناول الأطعمة الحارة والدهنية بكثرة.',
       ],
-      'footer':
-          'للحصول على تشخيص دقيق ووصفة علاجية مناسبة، يرجى إجراء فحص جرثومة المعدة واستشارة طبيب الجهاز الهضمي.',
-    },
-    {
-      'id': 'anemia',
-      'category': 'أمراض الدم',
-      'title': 'فقر الدم ونقص الحديد',
-      'subtitle': 'انخفاض الهيموجلوبين يقلل وصول الأكسجين للأنسجة...',
-      'time': 'منذ يومين',
-      'icon': Icons.favorite_rounded,
-      'color': 0xFFE11D48,
-      'isFavorite': true,
-      'question': 'ما هي أعراض فقر الدم الناتج عن نقص الحديد؟',
-      'answerIntro':
-          'يؤدي نقص الحديد إلى انخفاض إنتاج الهيموجلوبين الضروري لنقل الأكسجين في الدم، وتظهر الأعراض التالية تدريجياً:',
-      'bullets': [
-        'الإرهاق المستمر والضعف العام عند بذل مجهود بسيط.',
-        'شحوب البشرة واللثة وبطانة الجفون الداخلية.',
-        'تسارع ضربات القلب أو ضيق التنفس أثناء الحركة.',
-        'برودة الأطراف وتكسر الأظافر أو تساقط الشعر.',
-      ],
-      'footer':
-          'يوصى بإجراء تحليل صورة الدم الكاملة (CBC) ومخزون الحديد (Ferritin) قبل البدء بتناول مكملات الحديد.',
+      'footer': 'يُرجى إجراء فحص الجرثومة ومراجعة طبيب الجهاز الهضمي.',
     },
   ];
 
@@ -115,42 +104,18 @@ class AppController extends ChangeNotifier {
     }).toList();
   }
 
-  void toggleTheme() {
-    isDarkMode = !isDarkMode;
-    notifyListeners();
-  }
-
+  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
   void cycleFontSize() {
-    fontSizeLabel = fontSizeLabel == 'صغير'
-        ? 'متوسط'
-        : fontSizeLabel == 'متوسط'
-            ? 'كبير'
-            : 'صغير';
+    fontSizeLabel = fontSizeLabel == 'صغير' ? 'متوسط' : fontSizeLabel == 'متوسط' ? 'كبير' : 'صغير';
     notifyListeners();
   }
-
   void cycleModel() {
-    selectedModel = selectedModel.contains('3.1')
-        ? 'Meditron (7B)'
-        : 'Llama 3.1 (8B)';
+    selectedModel = selectedModel.contains('3.1') ? 'Meditron (7B)' : 'Llama 3.1 (8B) - Med';
     notifyListeners();
   }
-
-  void toggleServerStatus() {
-    isLocalServerConnected = !isLocalServerConnected;
-    notifyListeners();
-  }
-
-  void toggleSaveChats() {
-    saveChats = !saveChats;
-    notifyListeners();
-  }
-
-  void toggleNotifications() {
-    notificationsEnabled = !notificationsEnabled;
-    notifyListeners();
-  }
-
+  void toggleServerStatus() { isLocalServerConnected = !isLocalServerConnected; notifyListeners(); }
+  void toggleSaveChats() { saveChats = !saveChats; notifyListeners(); }
+  void toggleNotifications() { notificationsEnabled = !notificationsEnabled; notifyListeners(); }
   void toggleFavorite(String id) {
     final idx = chats.indexWhere((c) => c['id'] == id);
     if (idx != -1) {
@@ -158,22 +123,21 @@ class AppController extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  void setSearchQuery(String q) {
-    searchQuery = q;
+  void setSearchQuery(String q) { searchQuery = q; notifyListeners(); }
+  void setShowFavoritesOnly(bool v) { showFavoritesOnly = v; notifyListeners(); }
+  
+  void updateMedicalId(Map<String, String> newId) {
+    medicalId = newId;
     notifyListeners();
   }
 
-  void setShowFavoritesOnly(bool v) {
-    showFavoritesOnly = v;
+  void addVital(String type, String val, String status) {
+    vitalsLog.insert(0, {'date': 'اليوم', 'type': type, 'val': val, 'status': status});
     notifyListeners();
   }
 
-  void updateUserProfile(String n, String h) {
-    if (n.trim().isNotEmpty) userName = n.trim();
-    if (h.trim().isNotEmpty) {
-      userHandle = h.trim().startsWith('@') ? h.trim() : '@${h.trim()}';
-    }
+  void toggleMed(int index) {
+    medsList[index]['status'] = !medsList[index]['status'];
     notifyListeners();
   }
 
@@ -182,22 +146,20 @@ class AppController extends ChangeNotifier {
       'id': 'chat_${DateTime.now().millisecondsSinceEpoch}',
       'category': 'استشارة ذكية',
       'title': q.length > 28 ? '${q.substring(0, 28)}...' : q,
-      'subtitle': 'تحليل طبي فوري عبر المحرك المحلي ($selectedModel)...',
+      'subtitle': 'تحليل طبي فوري عبر المحرك المحلي...',
       'time': 'الآن',
       'icon': Icons.health_and_safety_rounded,
       'color': 0xFF0077B6,
       'isFavorite': false,
       'question': q,
-      'answerIntro':
-          'بناءً على المعطيات الطبية في نموذج ($selectedModel) بخصوص سؤالك حول "$q"، إليك الإرشادات والتفاصيل العلمية:',
+      'answerIntro': 'بناءً على معطيات المحرك الطبي بخصوص "$q"، إليك التحليل الإرشادي:',
       'bullets': [
-        'مراقبة الأعراض الحيوية بدقة وتدوين أوقات ظهورها أو زيادتها.',
-        'الحفاظ على ترطيب الجسم بشرب كميات كافية من الماء وأخذ قسط وافر من الراحة.',
-        'تجنب تناول أي أدوية تخصصية أو مضادات حيوية دون استشارة طبية مباشرة.',
-        'مراجعة الطبيب المختص لإجراء الفحوصات السريرية والمخبرية اللازمة عند استمرار الأعراض.',
+        'مراقبة الأعراض الحيوية وتدوين أي تغيرات طارئة بدقة.',
+        'الالتزام بالراحة التامة وترطيب الجسم بشرب السوائل المفيدة.',
+        'تجنب تناول أي أدوية تخصصية بدون إشراف طبي مباشر.',
+        'مراجعة الطبيب المعالج عند استمرار الأعراض لأكثر من 48 ساعة.',
       ],
-      'footer':
-          'تنبيه طبي: هذه القراءة التحليلية مخصصة للتثقيف الصحي المبدئي ولا تغني عن الفحص الطبي المباشر.',
+      'footer': 'تنبيه: هذه القراءة التحليلية مخصصة للتثقيف الصحي المبدئي ولا تغني عن الفحص السريري.',
     };
     if (saveChats) {
       chats.insert(0, newChat);
@@ -219,7 +181,7 @@ class MediqAiApp extends StatelessWidget {
       builder: (context, _) {
         final isDark = appController.isDarkMode;
         return MaterialApp(
-          title: 'MEDIQ AI',
+          title: 'MEDIQ AI PRO',
           debugShowCheckedModeBanner: false,
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData(
@@ -228,13 +190,7 @@ class MediqAiApp extends StatelessWidget {
             scaffoldBackgroundColor: const Color(0xFFF2F6FC),
             primaryColor: const Color(0xFF0066CC),
             cardColor: Colors.white,
-            dividerColor: const Color(0xFFE2E8F0),
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0066CC),
-              secondary: Color(0xFF00B4D8),
-              surface: Colors.white,
-              onSurface: Color(0xFF0A192F),
-            ),
+            colorScheme: const ColorScheme.light(primary: Color(0xFF0066CC), secondary: Color(0xFF00B4D8), surface: Colors.white),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
@@ -242,20 +198,12 @@ class MediqAiApp extends StatelessWidget {
             scaffoldBackgroundColor: const Color(0xFF060F1E),
             primaryColor: const Color(0xFF00B4D8),
             cardColor: const Color(0xFF0E1E32),
-            dividerColor: const Color(0xFF1E344E),
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF00B4D8),
-              secondary: Color(0xFF00E5FF),
-              surface: Color(0xFF0E1E32),
-              onSurface: Colors.white,
-            ),
+            colorScheme: const ColorScheme.dark(primary: Color(0xFF00B4D8), secondary: Color(0xFF00E5FF), surface: Color(0xFF0E1E32)),
           ),
           builder: (context, child) => Directionality(
             textDirection: TextDirection.rtl,
             child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(appController.fontScale),
-              ),
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(appController.fontScale)),
               child: child!,
             ),
           ),
@@ -266,21 +214,12 @@ class MediqAiApp extends StatelessWidget {
   }
 }
 
-// ==========================================
-// الشعار والموجة النبضية (Logo & ECG Wave)
-// ==========================================
-
+// ================= Logo & ECG =================
 class MediqLogo extends StatelessWidget {
   final double size;
   final bool showText;
   final bool forceDark;
-
-  const MediqLogo({
-    super.key,
-    this.size = 42,
-    this.showText = true,
-    this.forceDark = false,
-  });
+  const MediqLogo({super.key, this.size = 42, this.showText = true, this.forceDark = false});
 
   @override
   Widget build(BuildContext context) {
@@ -293,43 +232,17 @@ class MediqLogo extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(size * 0.30),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF00E5FF), Color(0xFF0077B6), Color(0xFF023E8A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF00B4D8).withOpacity(0.38),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
+            gradient: const LinearGradient(colors: [Color(0xFF00E5FF), Color(0xFF0077B6), Color(0xFF023E8A)]),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(
-                Icons.favorite_rounded,
-                color: Colors.white.withOpacity(0.18),
-                size: size * 0.72,
-              ),
+              Icon(Icons.favorite_rounded, color: Colors.white.withOpacity(0.18), size: size * 0.72),
               Container(
                 width: size * 0.54,
                 height: size * 0.54,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF061526).withOpacity(0.9),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
-                    width: 1.2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.health_and_safety_rounded,
-                  color: const Color(0xFF00E5FF),
-                  size: size * 0.34,
-                ),
+                decoration: BoxDecoration(color: const Color(0xFF061526).withOpacity(0.9), shape: BoxShape.circle),
+                child: Icon(Icons.health_and_safety_rounded, color: const Color(0xFF00E5FF), size: size * 0.34),
               ),
             ],
           ),
@@ -342,33 +255,14 @@ class MediqLogo extends StatelessWidget {
             children: [
               RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: size * 0.42,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.6,
-                  ),
+                  style: TextStyle(fontSize: size * 0.42, fontWeight: FontWeight.w900, letterSpacing: 0.6),
                   children: [
-                    TextSpan(
-                      text: 'MEDIQ ',
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF0A192F),
-                      ),
-                    ),
-                    const TextSpan(
-                      text: 'AI',
-                      style: TextStyle(color: Color(0xFF00B4D8)),
-                    ),
+                    TextSpan(text: 'MEDIQ ', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0A192F))),
+                    const TextSpan(text: 'AI', style: TextStyle(color: Color(0xFF00B4D8))),
                   ],
                 ),
               ),
-              Text(
-                'المساعد الطبي الذكي',
-                style: TextStyle(
-                  fontSize: size * 0.24,
-                  color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('المساعد الطبي الأكاديمي', style: TextStyle(fontSize: size * 0.22, color: isDark ? Colors.white70 : const Color(0xFF64748B), fontWeight: FontWeight.w600)),
             ],
           ),
         ],
@@ -381,46 +275,28 @@ class AnimatedEcgWave extends StatefulWidget {
   final double width;
   final double height;
   final Color color;
-  const AnimatedEcgWave({
-    super.key,
-    this.width = 220,
-    this.height = 45,
-    this.color = const Color(0xFF00E5FF),
-  });
+  const AnimatedEcgWave({super.key, this.width = 220, this.height = 45, this.color = const Color(0xFF00E5FF)});
 
   @override
   State<AnimatedEcgWave> createState() => _AnimatedEcgWaveState();
 }
 
-class _AnimatedEcgWaveState extends State<AnimatedEcgWave>
-    with SingleTickerProviderStateMixin {
+class _AnimatedEcgWaveState extends State<AnimatedEcgWave> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200))..repeat();
   }
-
   @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: widget.width,
       height: widget.height,
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (_, __) => CustomPaint(
-          painter: EcgPainter(progress: _ctrl.value, color: widget.color),
-        ),
-      ),
+      child: AnimatedBuilder(animation: _ctrl, builder: (_, __) => CustomPaint(painter: EcgPainter(progress: _ctrl.value, color: widget.color))),
     );
   }
 }
@@ -432,17 +308,8 @@ class EcgPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paintBase = Paint()
-      ..color = color.withOpacity(0.18)
-      ..strokeWidth = 2.0
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final paintGlow = Paint()
-      ..color = color
-      ..strokeWidth = 2.8
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+    final paintBase = Paint()..color = color.withOpacity(0.18)..strokeWidth = 2.0..strokeCap = StrokeCap.round..style = PaintingStyle.stroke;
+    final paintGlow = Paint()..color = color..strokeWidth = 2.8..strokeCap = StrokeCap.round..style = PaintingStyle.stroke;
 
     final path = Path();
     final mid = size.height / 2;
@@ -460,19 +327,14 @@ class EcgPainter extends CustomPainter {
     final metric = path.computeMetrics().first;
     final len = metric.length * 0.38;
     final start = (metric.length * progress) - (len / 2);
-    final end = math.min(metric.length, start + len);
-    final extract = metric.extractPath(math.max(0, start), end);
+    final extract = metric.extractPath(math.max(0, start), math.min(metric.length, start + len));
     canvas.drawPath(extract, paintGlow);
   }
-
   @override
   bool shouldRepaint(covariant EcgPainter old) => old.progress != progress;
 }
 
-// ==========================================
-// شاشة البداية (Splash Screen)
-// ==========================================
-
+// ================= SplashScreen =================
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -485,12 +347,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainShell()),
-        );
-      }
+      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell()));
     });
   }
 
@@ -498,18 +355,11 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: () => Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainShell()),
-        ),
+        onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell())),
         child: Container(
           width: double.infinity,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF040B16), Color(0xFF08203E), Color(0xFF040B16)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: LinearGradient(colors: [Color(0xFF040B16), Color(0xFF08203E), Color(0xFF040B16)], begin: Alignment.topLeft, end: Alignment.bottomRight),
           ),
           child: SafeArea(
             child: Column(
@@ -518,78 +368,27 @@ class _SplashScreenState extends State<SplashScreen> {
                 const Spacer(flex: 2),
                 Container(
                   padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF00E5FF).withOpacity(0.06),
-                    border: Border.all(
-                      color: const Color(0xFF00E5FF).withOpacity(0.18),
-                      width: 1.5,
-                    ),
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF00E5FF).withOpacity(0.06), border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.18))),
                   child: const MediqLogo(size: 115, showText: false),
                 ),
                 const SizedBox(height: 28),
                 RichText(
                   text: const TextSpan(
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.4,
-                    ),
+                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 1.4),
                     children: [
-                      TextSpan(
-                        text: 'MEDIQ ',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      TextSpan(
-                        text: 'AI',
-                        style: TextStyle(color: Color(0xFF00E5FF)),
-                      ),
+                      TextSpan(text: 'MEDIQ ', style: TextStyle(color: Colors.white)),
+                      TextSpan(text: 'AI PRO', style: TextStyle(color: Color(0xFF00E5FF))),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.07),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'NEXT-GEN MEDICAL AI ASSISTANT',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 26),
-                const Text(
-                  'اسأل ... افهم ... اطمئن',
-                  style: TextStyle(
-                    color: Color(0xFF00E5FF),
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const Text('أداة الأطباء والطلاب والمريض الذكية', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 30),
                 const AnimatedEcgWave(width: 240, height: 48),
                 const Spacer(flex: 2),
-                const SizedBox(
-                  width: 26,
-                  height: 26,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: Color(0xFF00E5FF),
-                  ),
-                ),
+                const SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.4, color: Color(0xFF00E5FF))),
                 const SizedBox(height: 14),
-                const Text(
-                  'جاري تشغيل المحرك الطبي الذكي...',
-                  style: TextStyle(color: Colors.white60, fontSize: 13),
-                ),
+                const Text('جاري تهيئة المنصة الطبية...', style: TextStyle(color: Colors.white60, fontSize: 13)),
                 const SizedBox(height: 36),
               ],
             ),
@@ -600,10 +399,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-// ==========================================
-// الهيكل الرئيسي للتطبيق (Main Shell)
-// ==========================================
-
+// ================= MainShell =================
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -618,38 +414,19 @@ class _MainShellState extends State<MainShell> {
   void _openChat(Map<String, dynamic> chat) {
     final isDesktop = MediaQuery.of(context).size.width >= 950;
     if (isDesktop) {
-      setState(() {
-        _selectedChatId = chat['id'];
-        _navIndex = 2;
-      });
+      setState(() { _selectedChatId = chat['id']; _navIndex = 2; });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ChatScreen(chatData: chat)),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatData: chat)));
     }
   }
 
   void _newChat([String? initialQuestion]) {
-    final newChat = {
-      'id': 'new',
-      'title': 'استشارة طبية جديدة',
-      'question': initialQuestion ?? '',
-      'answerIntro': '',
-      'bullets': <String>[],
-      'footer': '',
-    };
+    final newChat = {'id': 'new', 'title': 'استشارة طبية جديدة', 'question': initialQuestion ?? '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''};
     final isDesktop = MediaQuery.of(context).size.width >= 950;
     if (isDesktop) {
-      setState(() {
-        _selectedChatId = 'new';
-        _navIndex = 2;
-      });
+      setState(() { _selectedChatId = 'new'; _navIndex = 2; });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ChatScreen(chatData: newChat)),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatData: newChat)));
     }
   }
 
@@ -658,62 +435,41 @@ class _MainShellState extends State<MainShell> {
     final isDesktop = MediaQuery.of(context).size.width >= 950;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final pages = [
+      HomeScreen(onOpenChat: _openChat, onNewChat: () => _newChat()),
+      ExploreScreen(onAskQuestion: (q) => _newChat(q)),
+      ChatScreen(chatData: appController.chats.isNotEmpty ? appController.chats.first : {'id': 'new', 'title': 'استشارة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''}, embedded: true),
+      const MedicalToolsScreen(embedded: true),
+      const MedicalStudentHubScreen(embedded: true),
+      const SettingsScreen(embedded: true),
+    ];
+
     if (isDesktop) {
       final activeChat = appController.chats.firstWhere(
         (c) => c['id'] == (_selectedChatId ?? 'diabetes'),
-        orElse: () => {
-          'id': 'new',
-          'title': 'استشارة طبية جديدة',
-          'question': '',
-          'answerIntro': '',
-          'bullets': <String>[],
-          'footer': '',
-        },
+        orElse: () => {'id': 'new', 'title': 'استشارة جديدة', 'question': '', 'answerIntro': '', 'bullets': <String>[], 'footer': ''},
       );
       return Scaffold(
         body: Row(
           children: [
             SizedBox(
-              width: 285,
+              width: 275,
               child: SidebarDrawer(
                 onNewChat: () => _newChat(),
-                onSelectSettings: () => setState(() => _navIndex = 3),
-                onSelectHome: () {
-                  appController.setShowFavoritesOnly(false);
-                  setState(() => _navIndex = 0);
-                },
-                onSelectFav: () {
-                  appController.setShowFavoritesOnly(true);
-                  setState(() => _navIndex = 0);
-                },
+                onSelectNav: (idx) => setState(() => _navIndex = idx),
               ),
             ),
             Expanded(
               flex: 3,
-              child: _navIndex == 3
-                  ? const SettingsScreen(embedded: true)
-                  : _navIndex == 1
-                      ? ExploreScreen(onAskQuestion: (q) => _newChat(q))
-                      : _navIndex == 0
-                          ? HomeScreen(
-                              onOpenChat: _openChat,
-                              onNewChat: () => _newChat(),
-                            )
-                          : ChatScreen(
-                              chatData: activeChat,
-                              embedded: true,
-                              onOpenSettings: () => setState(() => _navIndex = 3),
-                            ),
+              child: _navIndex == 2
+                  ? ChatScreen(chatData: activeChat, embedded: true, onOpenSettings: () => setState(() => _navIndex = 5))
+                  : pages[_navIndex],
             ),
             Container(
-              width: 315,
+              width: 300,
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF0A1626) : Colors.white,
-                border: Border(
-                  right: BorderSide(
-                    color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                  ),
-                ),
+                border: Border(right: BorderSide(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
               ),
               child: const InfoPanel(),
             ),
@@ -726,86 +482,30 @@ class _MainShellState extends State<MainShell> {
       drawer: Drawer(
         backgroundColor: const Color(0xFF061222),
         child: SidebarDrawer(
-          onNewChat: () {
-            Navigator.pop(context);
-            _newChat();
-          },
-          onSelectSettings: () {
-            Navigator.pop(context);
-            setState(() => _navIndex = 3);
-          },
-          onSelectHome: () {
-            Navigator.pop(context);
-            appController.setShowFavoritesOnly(false);
-            setState(() => _navIndex = 0);
-          },
-          onSelectFav: () {
-            Navigator.pop(context);
-            appController.setShowFavoritesOnly(true);
-            setState(() => _navIndex = 0);
-          },
+          onNewChat: () { Navigator.pop(context); _newChat(); },
+          onSelectNav: (idx) { Navigator.pop(context); setState(() => _navIndex = idx); },
         ),
       ),
-      body: IndexedStack(
-        index: _navIndex,
-        children: [
-          HomeScreen(onOpenChat: _openChat, onNewChat: () => _newChat()),
-          ExploreScreen(onAskQuestion: (q) => _newChat(q)),
-          ChatScreen(
-            chatData: appController.chats.isNotEmpty
-                ? appController.chats.first
-                : {
-                    'id': 'new',
-                    'title': 'استشارة طبية جديدة',
-                    'question': '',
-                    'answerIntro': '',
-                    'bullets': <String>[],
-                    'footer': '',
-                  },
-            embedded: true,
-          ),
-          const SettingsScreen(embedded: true),
-        ],
-      ),
+      body: IndexedStack(index: _navIndex, children: pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0A1626) : Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -3),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 16, offset: const Offset(0, -3))],
         ),
         child: NavigationBar(
-          selectedIndex: _navIndex,
-          onDestinationSelected: (i) => setState(() => _navIndex = i),
+          selectedIndex: _navIndex > 5 ? 0 : _navIndex,
+          onSelected: (i) => setState(() => _navIndex = i),
           backgroundColor: Colors.transparent,
           elevation: 0,
           height: 68,
           indicatorColor: const Color(0xFF0077B6).withOpacity(isDark ? 0.30 : 0.14),
           destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF0096C7)),
-              label: 'الرئيسية',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.explore_outlined),
-              selectedIcon: Icon(Icons.explore_rounded, color: Color(0xFF0096C7)),
-              label: 'استكشاف',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline_rounded),
-              selectedIcon: Icon(Icons.chat_bubble_rounded, color: Color(0xFF0096C7)),
-              label: 'المحادثات',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF0096C7)),
-              label: 'الإعدادات',
-            ),
+            NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF0096C7)), label: 'الرئيسية'),
+            NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore_rounded, color: Color(0xFF0096C7)), label: 'الموسوعة'),
+            NavigationDestination(icon: Icon(Icons.chat_bubble_outline_rounded), selectedIcon: Icon(Icons.chat_bubble_rounded, color: Color(0xFF0096C7)), label: 'المحادثة'),
+            NavigationDestination(icon: Icon(Icons.medical_services_outlined), selectedIcon: Icon(Icons.medical_services_rounded, color: Color(0xFF0096C7)), label: 'الحاسبات'),
+            NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school_rounded, color: Color(0xFF0096C7)), label: 'الطلاب'),
+            NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF0096C7)), label: 'الإعدادات'),
           ],
         ),
       ),
@@ -813,18 +513,111 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-// ==========================================
-// الشاشة الرئيسية (Home Screen)
-// ==========================================
+// ================= Sidebar Drawer (All Pages) =================
+class SidebarDrawer extends StatelessWidget {
+  final VoidCallback onNewChat;
+  final Function(int) onSelectNav;
+  const SidebarDrawer({super.key, required this.onNewChat, required this.onSelectNav});
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF061222),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const MediqLogo(size: 38, forceDark: true),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+                child: Row(
+                  children: [
+                    const CircleAvatar(radius: 18, backgroundColor: Color(0xFF0077B6), child: Icon(Icons.person_rounded, color: Colors.white, size: 20)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(appController.userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5)),
+                          Text(appController.userHandle, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              InkWell(
+                onTap: onNewChat,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF0096C7), Color(0xFF023E8A)]),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.add_comment_rounded, color: Colors.white, size: 18),
+                      SizedBox(width: 10),
+                      Expanded(child: Text('استشارة جديدة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5))),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _item(Icons.home_rounded, 'الرئيسية', 0),
+                    _item(Icons.explore_rounded, 'الموسوعة والاستكشاف', 1),
+                    _item(Icons.chat_bubble_rounded, 'المساعد الذكي', 2),
+                    _item(Icons.medical_services_rounded, 'الأدوات والحاسبات الطبية', 3),
+                    _item(Icons.school_rounded, 'بوابة طالب الطب (OSCE & GCS)', 4),
+                    _item(Icons.settings_rounded, 'الإعدادات والتخصيص', 5),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: const Color(0xFF0B1F36), borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  children: [
+                    Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    const Text('المحرك المحلي متصل', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11.5)),
+                    const Spacer(),
+                    const Icon(Icons.verified_rounded, color: Color(0xFF00E5FF), size: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _item(IconData icon, String title, int index) {
+    return ListTile(
+      onTap: () => onSelectNav(index),
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: const Color(0xFF00B4D8), size: 20),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w500)),
+    );
+  }
+}
+
+// ================= HomeScreen =================
 class HomeScreen extends StatelessWidget {
   final Function(Map<String, dynamic>) onOpenChat;
   final VoidCallback onNewChat;
-  const HomeScreen({
-    super.key,
-    required this.onOpenChat,
-    required this.onNewChat,
-  });
+  const HomeScreen({super.key, required this.onOpenChat, required this.onNewChat});
 
   @override
   Widget build(BuildContext context) {
@@ -834,7 +627,6 @@ class HomeScreen extends StatelessWidget {
     return SafeArea(
       child: Column(
         children: [
-          // الشريط العلوي
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
@@ -847,15 +639,9 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                      ),
+                      border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
                     ),
-                    child: Icon(
-                      Icons.menu_rounded,
-                      color: isDark ? Colors.white : const Color(0xFF0A192F),
-                      size: 22,
-                    ),
+                    child: Icon(Icons.menu_rounded, color: isDark ? Colors.white : const Color(0xFF0A192F), size: 22),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -864,41 +650,22 @@ class HomeScreen extends StatelessWidget {
                   onPressed: appController.toggleTheme,
                   style: IconButton.styleFrom(
                     backgroundColor: Theme.of(context).cardColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  icon: Icon(
-                    isDark ? Icons.wb_sunny_rounded : Icons.dark_mode_rounded,
-                    color: isDark ? const Color(0xFFFFB703) : const Color(0xFF023E8A),
-                    size: 20,
-                  ),
+                  icon: Icon(isDark ? Icons.wb_sunny_rounded : Icons.dark_mode_rounded, color: isDark ? const Color(0xFFFFB703) : const Color(0xFF023E8A), size: 20),
                 ),
               ],
             ),
           ),
-
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                // بطاقة الترحيب وحالة المحرك المحلي
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF03045E), Color(0xFF0077B6), Color(0xFF00B4D8)],
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                    ),
+                    gradient: const LinearGradient(colors: [Color(0xFF03045E), Color(0xFF0077B6), Color(0xFF00B4D8)], begin: Alignment.topRight, end: Alignment.bottomLeft),
                     borderRadius: BorderRadius.circular(22),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0077B6).withOpacity(0.32),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -906,71 +673,24 @@ class HomeScreen extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.25), borderRadius: BorderRadius.circular(20)),
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: appController.isLocalServerConnected
-                                        ? const Color(0xFF10B981)
-                                        : Colors.amber,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  appController.isLocalServerConnected
-                                      ? 'متصل محلياً • ${appController.selectedModel}'
-                                      : 'الخادم المحلي في وضع الاستعداد',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                Icon(Icons.bolt_rounded, color: Color(0xFF00E5FF), size: 14),
+                                SizedBox(width: 4),
+                                Text('أحدث إصدار أطباء وطلاب', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                               ],
-                            ),
-                          ),
-                          const Spacer(),
-                          InkWell(
-                            onTap: appController.toggleServerStatus,
-                            child: const Icon(
-                              Icons.sync_rounded,
-                              color: Colors.white70,
-                              size: 20,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'أهلاً بك، ${appController.userName} 👋',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                      const SizedBox(height: 14),
+                      Text('أهلاً بك، ${appController.userName} 🩺', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
                       const SizedBox(height: 6),
-                      const Text(
-                        'مساعدك الطبي الذكي جاهز لتحليل الأعراض وتقديم الإرشادات الصحية بخصوصية تامة وبدون إنترنت.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12.5,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      const Text('منصة طبية شاملة: حاسبات سريرية، إِسعافات، تحليل مخبري، وبوابة طالب طب.', style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4)),
+                      const SizedBox(height: 14),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -979,146 +699,53 @@ class HomeScreen extends StatelessWidget {
                             backgroundColor: Colors.white,
                             foregroundColor: const Color(0xFF023E8A),
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
-                          icon: const Icon(Icons.add_comment_rounded, size: 20),
-                          label: const Text(
-                            'بدء استشارة طبية جديدة',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14.5,
-                            ),
-                          ),
+                          icon: const Icon(Icons.add_comment_rounded, size: 18),
+                          label: const Text('بدء استشارة أو فحص جديد', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 18),
-
-                // شريط البحث
+                const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
                   ),
                   child: TextField(
                     onChanged: appController.setSearchQuery,
                     decoration: InputDecoration(
                       hintText: 'ابحث في الاستشارات والمواضيع الطبية...',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 13.5,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search_rounded,
-                        color: Color(0xFF0077B6),
-                      ),
-                      suffixIcon: appController.searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () => appController.setSearchQuery(''),
-                            )
-                          : null,
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0077B6)),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // عنوان القائمة مع أزرار الفلترة
+                const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 4,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0096C7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
+                        Container(width: 4, height: 18, decoration: BoxDecoration(color: const Color(0xFF0096C7), borderRadius: BorderRadius.circular(4))),
                         const SizedBox(width: 8),
-                        Text(
-                          appController.showFavoritesOnly
-                              ? 'الاستشارات المفضلة ⭐'
-                              : 'السجل الطبي الأخير',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : const Color(0xFF0A192F),
-                          ),
-                        ),
+                        Text(appController.showFavoritesOnly ? 'الاستشارات المفضلة ⭐' : 'سجل الاستشارات الطبية', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : const Color(0xFF0A192F))),
                       ],
                     ),
                     TextButton.icon(
-                      onPressed: () => appController.setShowFavoritesOnly(
-                        !appController.showFavoritesOnly,
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF0077B6),
-                      ),
-                      icon: Icon(
-                        appController.showFavoritesOnly
-                            ? Icons.view_list_rounded
-                            : Icons.star_rounded,
-                        size: 18,
-                      ),
-                      label: Text(
-                        appController.showFavoritesOnly ? 'عرض الكل' : 'المفضلة فقط',
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      onPressed: () => appController.setShowFavoritesOnly(!appController.showFavoritesOnly),
+                      icon: Icon(appController.showFavoritesOnly ? Icons.view_list_rounded : Icons.star_rounded, size: 18),
+                      label: Text(appController.showFavoritesOnly ? 'عرض الكل' : 'المفضلة فقط', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 8),
-
-                if (chats.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(36),
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.folder_off_outlined,
-                          size: 48,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'لا توجد محادثات مطابقة للبحث',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // بطاقات المحادثات
                 ...chats.map((chat) {
                   final isFav = chat['isFavorite'] == true;
                   final accentColor = Color(chat['color'] as int? ?? 0xFF0077B6);
@@ -1127,16 +754,7 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.025),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
                     ),
                     child: InkWell(
                       onTap: () => onOpenChat(chat),
@@ -1146,90 +764,24 @@ class HomeScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: accentColor.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Icon(
-                                chat['icon'] as IconData,
-                                color: accentColor,
-                                size: 26,
-                              ),
+                              width: 50, height: 50,
+                              decoration: BoxDecoration(color: accentColor.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+                              child: Icon(chat['icon'] as IconData, color: accentColor, size: 24),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: accentColor.withOpacity(0.12),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          chat['category'] ?? 'عام',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: accentColor,
-                                          ),
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        chat['time'],
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF94A3B8),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    chat['title'],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 15,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF0A192F),
-                                    ),
-                                  ),
+                                  Text(chat['title'], style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF0A192F))),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    chat['subtitle'],
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                  ),
+                                  Text(chat['subtitle'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
                             IconButton(
-                              onPressed: () =>
-                                  appController.toggleFavorite(chat['id']),
-                              icon: Icon(
-                                isFav
-                                    ? Icons.star_rounded
-                                    : Icons.star_border_rounded,
-                                color: isFav
-                                    ? const Color(0xFFFFB703)
-                                    : const Color(0xFF94A3B8),
-                                size: 22,
-                              ),
+                              onPressed: () => appController.toggleFavorite(chat['id']),
+                              icon: Icon(isFav ? Icons.star_rounded : Icons.star_border_rounded, color: isFav ? const Color(0xFFFFB703) : const Color(0xFF94A3B8), size: 22),
                             ),
                           ],
                         ),
@@ -1237,7 +789,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 }),
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -1247,10 +798,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ==========================================
-// شاشة استكشاف المواضيع الطبية (Explore Screen)
-// ==========================================
-
+// ================= ExploreScreen =================
 class ExploreScreen extends StatelessWidget {
   final Function(String) onAskQuestion;
   const ExploreScreen({super.key, required this.onAskQuestion});
@@ -1259,78 +807,27 @@ class ExploreScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final topics = [
-      {
-        'title': 'صحة القلب والشرايين',
-        'sub': 'ضغط الدم، الكوليسترول، وتخطيط القلب',
-        'icon': Icons.monitor_heart_rounded,
-        'color': 0xFFE11D48,
-        'q': 'ما هي أعراض ارتفاع ضغط الدم وكيف أحافظ على صحة القلب؟',
-      },
-      {
-        'title': 'السكري والغدد الصماء',
-        'sub': 'تنظيم السكر، الأنسولين، والغدة الدرقية',
-        'icon': Icons.water_drop_rounded,
-        'color': 0xFF0096C7,
-        'q': 'كيف يمكنني تنظيم مستوى السكر التراكمي في الدم طبيعياً؟',
-      },
-      {
-        'title': 'الجهاز الهضمي والتغذية',
-        'sub': 'جرثومة المعدة، القولون العصبي، والفيتامينات',
-        'icon': Icons.restaurant_menu_rounded,
-        'color': 0xFF10B981,
-        'q': 'ما هي أفضل النصائح لعلاج القولون العصبي وحموضة المعدة؟',
-      },
-      {
-        'title': 'المناعة والفيتامينات',
-        'sub': 'فيتامين D، الحديد، الزنك، وتقوية المناعة',
-        'icon': Icons.shield_rounded,
-        'color': 0xFFF59E0B,
-        'q': 'ما هي أعراض نقص فيتامين D والحديد في الجسم؟',
-      },
-      {
-        'title': 'الأعصاب والصداع',
-        'sub': 'الصداع النصفي، التوتر، وجودة النوم',
-        'icon': Icons.psychology_rounded,
-        'color': 0xFF8B5CF6,
-        'q': 'ما هي أسباب الصداع النصفي المتكرر وكيف أتغلب على الأرق؟',
-      },
-      {
-        'title': 'الإسعافات الأولية',
-        'sub': 'إرشادات التعامل مع الحالات الطارئة',
-        'icon': Icons.medical_services_rounded,
-        'color': 0xFFEC4899,
-        'q': 'ما هي أهم خطوات الإسعافات الأولية لحالات الإغماء أو الحروق البسيطة؟',
-      },
+      {'title': 'صحة القلب والشرايين', 'sub': 'ضغط الدم، ECG، والكوليسترول', 'icon': Icons.monitor_heart_rounded, 'color': 0xFFE11D48, 'q': 'ما هي أهم مؤشرات صحة القلب وكيف أقرأ تخطيط القلب ECG؟'},
+      {'title': 'السكري والغدد', 'sub': 'مستوى السكر، HbA1c، والأنسولين', 'icon': Icons.water_drop_rounded, 'color': 0xFF0096C7, 'q': 'كيف أفسر نتيجة تحليل السكر التراكمي HbA1c بدقة؟'},
+      {'title': 'المناعة والفيتامينات', 'sub': 'فيتامين D، الحديد، والمناعة', 'icon': Icons.shield_rounded, 'color': 0xFF10B981, 'q': 'ما هي أعراض نقص فيتامين D والحديد وكيف أعوضهما؟'},
+      {'title': 'الجهاز الهضمي', 'sub': 'جرثومة المعدة والقولون', 'icon': Icons.restaurant_menu_rounded, 'color': 0xFFF59E0B, 'q': 'ما هي أعراض جرثومة المعدة وبروتوكول العلاج الشائع؟'},
+      {'title': 'الأعصاب والصداع', 'sub': 'الشقيقة، التوتر، وجودة النوم', 'icon': Icons.psychology_rounded, 'color': 0xFF8B5CF6, 'q': 'ما هي أسباب الصداع النصفي الشديد وكيف أتغلب على الأرق؟'},
+      {'title': 'الإسعافات الطارئة', 'sub': 'الإغماء، الحروق، النزيف', 'icon': Icons.medical_services_rounded, 'color': 0xFFEC4899, 'q': 'ما هي الإسعافات الأولية السريعة لحالات الإغماء وانخفاض السكر؟'},
     ];
 
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'الموسوعة والاستكشاف الطبي',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: isDark ? Colors.white : const Color(0xFF0A192F),
-            ),
-          ),
+          Text('الموسوعة والاستكشاف السريري', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF0A192F))),
           const SizedBox(height: 6),
-          const Text(
-            'اختر أي قسم طبي لبدء محادثة تحليلية فورية مع المساعد الذكي:',
-            style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
-          ),
-          const SizedBox(height: 20),
+          const Text('اختر أي تخصص أو موضوع طبي لبدء تحليل فوري:', style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B))),
+          const SizedBox(height: 18),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: topics.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.05,
-            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.05),
             itemBuilder: (context, i) {
               final t = topics[i];
               final c = Color(t['color'] as int);
@@ -1342,47 +839,16 @@ class ExploreScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: c.withOpacity(0.14),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(t['icon'] as IconData, color: c, size: 26),
-                      ),
+                      Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: c.withOpacity(0.14), borderRadius: BorderRadius.circular(14)), child: Icon(t['icon'] as IconData, color: c, size: 24)),
                       const Spacer(),
-                      Text(
-                        t['title'] as String,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14.5,
-                          color: isDark ? Colors.white : const Color(0xFF0A192F),
-                        ),
-                      ),
+                      Text(t['title'] as String, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: isDark ? Colors.white : const Color(0xFF0A192F))),
                       const SizedBox(height: 4),
-                      Text(
-                        t['sub'] as String,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
+                      Text(t['sub'] as String, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                     ],
                   ),
                 ),
@@ -1395,221 +861,414 @@ class ExploreScreen extends StatelessWidget {
   }
 }
 
-// ==========================================
-// القائمة الجانبية (Sidebar Drawer)
-// ==========================================
+// ================= MedicalToolsScreen (Features 2, 6, 7, 13, 14, 15, 16, 17) =================
+class MedicalToolsScreen extends StatefulWidget {
+  final bool embedded;
+  const MedicalToolsScreen({super.key, this.embedded = false});
 
-class SidebarDrawer extends StatelessWidget {
-  final VoidCallback onNewChat;
-  final VoidCallback onSelectSettings;
-  final VoidCallback onSelectHome;
-  final VoidCallback onSelectFav;
+  @override
+  State<MedicalToolsScreen> createState() => _MedicalToolsScreenState();
+}
 
-  const SidebarDrawer({
-    super.key,
-    required this.onNewChat,
-    required this.onSelectSettings,
-    required this.onSelectHome,
-    required this.onSelectFav,
-  });
+class _MedicalToolsScreenState extends State<MedicalToolsScreen> {
+  int _selectedTab = 0; // 0: BMI, 1: Vitals, 2: Lab, 3: Water, 4: Interactions
+
+  // BMI controllers
+  final TextEditingController _weightCtrl = TextEditingController(text: '70');
+  final TextEditingController _heightCtrl = TextEditingController(text: '175');
+  String _bmiResult = '';
+
+  // Vitals controllers
+  final TextEditingController _bpCtrl = TextEditingController(text: '120/80');
+
+  // Lab interpreter
+  String _labType = 'السكر التراكمي (HbA1c)';
+  final TextEditingController _labValCtrl = TextEditingController(text: '6.2');
+  String _labResult = '';
+
+  // Water
+  int _waterCups = 4;
+
+  void _calcBmi() {
+    final w = double.tryParse(_weightCtrl.text) ?? 0;
+    final h = double.tryParse(_heightCtrl.text) ?? 0;
+    if (w <= 0 || h <= 0) return;
+    final hm = h / 100;
+    final bmi = w / (hm * hm);
+    String status = '';
+    if (bmi < 18.5) status = 'وزن منخفض (Underweight)';
+    else if (bmi < 25) status = 'وزن مثالي وطبيعي (Normal) ✅';
+    else if (bmi < 30) status = 'زيادة وزن (Overweight)';
+    else status = 'سمنة (Obese) - يُنصح بالمتابعة الغذائية';
+
+    setState(() {
+      _bmiResult = 'مؤشر كتلة الجسم (BMI): ${bmi.toStringAsFixed(1)}\nالتصنيف: $status';
+    });
+  }
+
+  void _interpretLab() {
+    final v = double.tryParse(_labValCtrl.text) ?? 0;
+    String res = '';
+    if (_labType.contains('HbA1c')) {
+      if (v < 5.7) res = 'طبيعي (سليم)';
+      else if (v < 6.5) res = 'مرحلة ما قبل السكري (Prediabetes) - يُنصح بتعديل النمط الغذائي.';
+      else res = 'مرتفع (مؤشر لمرض السكري) - يرجى مراجعة الطبيب.';
+    } else if (_labType.contains('فيتامين D')) {
+      if (v < 20) res = 'نقص حاد (Deficient) - يتطلب وصفة علاجية مكملة.';
+      else if (v < 30) res = 'نقص (Insufficient).';
+      else res = 'مستوى طبيعي ومطمئن (Sufficient) ✅';
+    } else {
+      res = 'القراءة المدخلة ($v) ضمن المعدلات العامة للاختبار. راجع التقرير المخبري المختوم.';
+    }
+    setState(() => _labResult = res);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF061222),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const MediqLogo(size: 40, forceDark: true),
-              const SizedBox(height: 18),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Color(0xFF0077B6),
-                      child: Icon(Icons.person_rounded, color: Colors.white),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            appController.userName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            appController.userHandle,
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: onNewChat,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 13,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0096C7), Color(0xFF023E8A)],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'استشارة طبية جديدة',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _item(Icons.history_rounded, 'سجل المحادثات', onSelectHome),
-              _item(Icons.star_rounded, 'الاستشارات المفضلة', onSelectFav),
-              _item(Icons.settings_rounded, 'إعدادات النظام', onSelectSettings),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B1F36),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFF00E5FF).withOpacity(0.22),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            color: appController.isLocalServerConnected
-                                ? const Color(0xFF10B981)
-                                : Colors.amber,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          appController.isLocalServerConnected
-                              ? 'متصل بالخادم المحلي'
-                              : 'وضع عدم الاتصال',
-                          style: const TextStyle(
-                            color: Color(0xFF10B981),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.verified_user_rounded,
-                          color: Color(0xFF00E5FF),
-                          size: 16,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'المحرك: ${appController.selectedModel}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'خصوصية تامة • معالجة محلية 100%',
-                      style: TextStyle(color: Colors.white60, fontSize: 11),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Center(
-                child: Text(
-                  'MEDIQ AI PRO • v2.0',
-                  style: TextStyle(color: Colors.white38, fontSize: 11),
-                ),
-              ),
-            ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: !widget.embedded,
+        title: Text('الأدوات والحاسبات الطبية المتقدمة', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: isDark ? Colors.white : const Color(0xFF0A192F))),
+      ),
+      body: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _tabBtn('حاسبة BMI', 0),
+                _tabBtn('سجل العلامات الحيوية', 1),
+                _tabBtn('مفسر التحاليل', 2),
+                _tabBtn('عدّاد الماء', 3),
+                _tabBtn('التعارضات الدوائية', 4),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (_selectedTab == 0) _buildBmiCard(isDark),
+                if (_selectedTab == 1) _buildVitalsCard(isDark),
+                if (_selectedTab == 2) _buildLabCard(isDark),
+                if (_selectedTab == 3) _buildWaterCard(isDark),
+                if (_selectedTab == 4) _buildInteractionsCard(isDark),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _item(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      onTap: onTap,
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-      leading: Icon(icon, color: const Color(0xFF00B4D8), size: 21),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+  Widget _tabBtn(String label, int index) {
+    final active = _selectedTab == index;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: active,
+        onSelected: (_) => setState(() => _selectedTab = index),
+        selectedColor: const Color(0xFF0077B6),
+        labelStyle: TextStyle(color: active ? Colors.white : null, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildBmiCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('حاسبة مؤشر كتلة الجسم والوزن المثالي (BMI)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          TextField(controller: _weightCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الوزن بالكيلوجرام (kg)')),
+          const SizedBox(height: 10),
+          TextField(controller: _heightCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الطول بالسنتيمتر (cm)')),
+          const SizedBox(height: 16),
+          ElevatedButton(onPressed: _calcBmi, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0077B6), foregroundColor: Colors.white), child: const Text('احسب المؤشر الآن')),
+          if (_bmiResult.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF0096C7).withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: Text(_bmiResult, style: const TextStyle(fontWeight: FontWeight.bold, height: 1.5))),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVitalsCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('تسجيل قراءة الضغط أو السكر', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          TextField(controller: _bpCtrl, decoration: const InputDecoration(labelText: 'القراءة (مثال: 130/85 أو 110 mg/dl)')),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            onPressed: () {
+              appController.addVital('ضغط الدم / قياس', _bpCtrl.text, 'تم التسجيل');
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت إضافة القراءة إلى السجل بنجاح ✓')));
+              setState(() {});
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('حفظ في السجل الحيوي'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
+          ),
+          const SizedBox(height: 18),
+          const Text('السجل الحفظ السابق:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          ...appController.vitalsLog.map((v) => ListTile(
+            dense: true,
+            leading: const Icon(Icons.monitor_heart_rounded, color: Color(0xFF0077B6)),
+            title: Text('${v['type']}: ${v['val']}'),
+            subtitle: Text('الوقت: ${v['date']}'),
+            trailing: Chip(label: Text(v['status'], style: const TextStyle(fontSize: 11)), backgroundColor: Colors.green.withOpacity(0.1)),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('مفسر التحاليل المخبرية السريع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: _labType,
+            items: const [
+              DropdownMenuItem(value: 'السكر التراكمي (HbA1c)', child: Text('السكر التراكمي (HbA1c)')),
+              DropdownMenuItem(value: 'فيتامين D (Vit D)', child: Text('فيتامين D (Vit D)')),
+            ],
+            onChanged: (val) => setState(() => _labType = val!),
+            decoration: const InputDecoration(labelText: 'نوع التحليل'),
+          ),
+          const SizedBox(height: 10),
+          TextField(controller: _labValCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الرقم أو النتيجة الرقمية')),
+          const SizedBox(height: 14),
+          ElevatedButton(onPressed: _interpretLab, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0077B6), foregroundColor: Colors.white), child: const Text('تحليل النتيجة الطبية')),
+          if (_labResult.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFFF59E0B).withOpacity(0.12), borderRadius: BorderRadius.circular(12)), child: Text(_labResult, style: const TextStyle(fontWeight: FontWeight.bold, height: 1.5))),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaterCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+      child: Column(
+        children: [
+          const Text('عدّاد أكواب الماء اليومي (Hydration Tracker)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(onPressed: () => setState(() => _waterCups = math.max(0, _waterCups - 1)), icon: const Icon(Icons.remove_circle, size: 32, color: Colors.red)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('$_waterCups / 8 أكواب', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0077B6))),
+              ),
+              IconButton(onPressed: () => setState(() => _waterCups += 1), icon: const Icon(Icons.add_circle, size: 32, color: Colors.green)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(value: _waterCups / 8, minHeight: 10, borderRadius: BorderRadius.circular(10)),
+          const SizedBox(height: 8),
+          const Text('حافظ على شرب الماء بانتظام لصحة الكلى ونضارة البشرة.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInteractionsCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text('كاشف التعارضات الدوائية والغذائية الهامة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          SizedBox(height: 12),
+          Text('• حبوب الحديد والكالسيوم: لا تتناولها مع الشاي أو القهوة لأنها تمنع الامتصاص.\n• المسكنات (NSAIDs): يفضل أخذها بعد الوجبة تماماً لحماية جدار المعدة.\n• المضادات الحيوية: تجنب منتجات الألبان مع بعض أنواعها كالـ Doxycycline.', style: TextStyle(height: 1.6, fontSize: 13.5)),
+        ],
       ),
     );
   }
 }
 
-// ==========================================
-// شاشة المحادثة (Chat Screen)
-// ==========================================
+// ================= MedicalStudentHubScreen (Features 18, 19, 20, 21, 22) =================
+class MedicalStudentHubScreen extends StatefulWidget {
+  final bool embedded;
+  const MedicalStudentHubScreen({super.key, this.embedded = false});
 
+  @override
+  State<MedicalStudentHubScreen> createState() => _MedicalStudentHubScreenState();
+}
+
+class _MedicalStudentHubScreenState extends State<MedicalStudentHubScreen> {
+  int _tab = 0; // 0: GCS, 1: Abbreviations, 2: ECG & XRay, 3: Flashcards
+
+  // GCS calculator state
+  int _gcsE = 4;
+  int _gcsV = 5;
+  int _gcsM = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final totalGcs = _gcsE + _gcsV + _gcsM;
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: !widget.embedded,
+        title: Text('بوابة طالب الطب والتدريب السريري', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: isDark ? Colors.white : const Color(0xFF0A192F))),
+      ),
+      body: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _tabBtn('مقياس GCS للوعي', 0),
+                _tabBtn('اختصارات التذاكر الطبية', 1),
+                _tabBtn('منهجية ECG وأشعة الصدر', 2),
+                _tabBtn('بطاقات المراجعة (Flashcards)', 3),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (_tab == 0) ...[
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('حاسبة غلاسكو للغيبوبة (GCS Score): $totalGcs / 15', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: Color(0xFF0077B6))),
+                        const SizedBox(height: 14),
+                        _gcsDropdown('استجابة العين (Eye - E)', _gcsE, {4: 'عفوية (Spontaneous)', 3: 'للصوت (To Speech)', 2: 'للألم (To Pain)', 1: 'لا توجد (None)'}, (v) => setState(() => _gcsE = v)),
+                        _gcsDropdown('الاستجابة اللفظية (Verbal - V)', _gcsV, {5: 'واعي ومنتظم (Oriented)', 4: 'مشتت (Confused)', 3: 'كلمات غير مرتبة (Inappropriate)', 2: 'أصوات غير مفهومة (Incomprehensible)', 1: 'لا توجد (None)'}, (v) => setState(() => _gcsV = v)),
+                        _gcsDropdown('الاستجابة الحركية (Motor - M)', _gcsM, {6: 'ينفذ الأوامر (Obeys commands)', 5: 'يحدد مكان الألم (Localizes pain)', 4: 'سحب للألم (Withdrawal)', 3: 'ثني غير طبيعي (Decorticate)', 2: 'بسط غير طبيعي (Decerebrate)', 1: 'لا توجد (None)'}, (v) => setState(() => _gcsM = v)),
+                      ],
+                    ),
+                  ),
+                ],
+                if (_tab == 1) ...[
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text('قاموس الاختصارات الطبية (Medical Abbreviations)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        SizedBox(height: 12),
+                        Text('• BID: مرتان يومياً (Twice a day)\n• TID: ثلاث مرات يومياً (Three times a day)\n• QID: أربع مرات يومياً\n• PRN: عند الحاجة (As needed)\n• STAT: فوراً وبشكل عاجل (Immediately)\n• NPO: صائم لا شيء عن طريق الفم (Nothing by mouth)\n• IV / IM: حقن وريدي / حقن عضلي\n• SOB: ضيق التنفس (Shortness of breath)\n• CP: ألم الصدر (Chest pain)', style: TextStyle(height: 1.6, fontSize: 13.5)),
+                      ],
+                    ),
+                  ),
+                ],
+                if (_tab == 2) ...[
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text('منهجية قراءة تخطيط القلب (ECG Interpretation)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0077B6))),
+                        SizedBox(height: 8),
+                        Text('1. معدل النبض (Rate): احسب المربعات الكبيرة بين قمم R واقسم 300 عليها.\n2. النظم (Rhythm): هل المنتظم (Regular) أم لا؟\n3. موجة P ومحور القلب (Axis).\n4. مركب QRS وقطعة ST (بحثاً عن ارتفاع ST Elevation في جلطات STEMI).\n\nمنهجية أشعة الصدر (Chest X-Ray ABCDEF):\nA: Airways | B: Bones & Soft tissue | C: Cardiac shadow | D: Diaphragm | E: Effusions / Edema | F: Fields (lungs).', style: TextStyle(height: 1.5, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ],
+                if (_tab == 3) ...[
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text('بطاقات العلامات السريرية (Clinical Flashcards)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        SizedBox(height: 12),
+                        Text('• علامة ميرفي (Murphy\'s Sign): إيجابية في التهاب المرارة الحاد (Acute Cholecystitis).\n• علامة مكبرني (McBurney\'s Point): ألم في الربع السفلي الأيمن في التهاب الزائدة الدودية.\n• انعكاس بابينسكي (Babinski Reflex): طبيعي في الرضع، وغير طبيعي (Upgoing) في الآفات العصبية المركزية.', style: TextStyle(height: 1.6, fontSize: 13.5)),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tabBtn(String label, int index) {
+    final active = _tab == index;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: active,
+        onSelected: (_) => setState(() => _tab = index),
+        selectedColor: const Color(0xFF0077B6),
+        labelStyle: TextStyle(color: active ? Colors.white : null, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _gcsDropdown(String title, int currentVal, Map<int, String> options, Function(int) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0096C7))),
+          const SizedBox(height: 4),
+          DropdownButtonFormField<int>(
+            value: currentVal,
+            items: options.entries.map((e) => DropdownMenuItem(value: e.key, child: Text('${e.key} - ${e.value}', style: const TextStyle(fontSize: 13)))).toList(),
+            onChanged: (val) => onChanged(val!),
+            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ================= ChatScreen =================
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> chatData;
   final bool embedded;
   final VoidCallback? onOpenSettings;
-  const ChatScreen({
-    super.key,
-    required this.chatData,
-    this.embedded = false,
-    this.onOpenSettings,
-  });
+  const ChatScreen({super.key, required this.chatData, this.embedded = false, this.onOpenSettings});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -1626,9 +1285,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     final initialQ = widget.chatData['question']?.toString() ?? '';
     if (widget.chatData['id'] == 'new' && initialQ.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _send(initialQ);
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _send(initialQ));
     }
   }
 
@@ -1651,9 +1308,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasInitialBuiltInAnswer =
-        widget.chatData['id'] != 'new' &&
-        (widget.chatData['question'] as String).isNotEmpty;
+    final hasInitialBuiltInAnswer = widget.chatData['id'] != 'new' && (widget.chatData['question'] as String).isNotEmpty;
     final isNew = !hasInitialBuiltInAnswer && _exchanges.isEmpty && !_loading;
 
     return Scaffold(
@@ -1669,33 +1324,12 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.chatData['title'] ?? 'استشارة طبية',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0A192F),
-                    ),
-                  ),
+                  Text(widget.chatData['title'] ?? 'استشارة طبية', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? Colors.white : const Color(0xFF0A192F))),
                   Row(
                     children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
                       const SizedBox(width: 5),
-                      Text(
-                        'متصل • ${appController.selectedModel}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF10B981),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text('متصل • ${appController.selectedModel}', style: const TextStyle(fontSize: 11, color: Color(0xFF10B981), fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ],
@@ -1711,24 +1345,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 setState(() {});
               },
               icon: Icon(
-                widget.chatData['isFavorite'] == true
-                    ? Icons.star_rounded
-                    : Icons.star_border_rounded,
-                color: widget.chatData['isFavorite'] == true
-                    ? const Color(0xFFFFB703)
-                    : null,
+                widget.chatData['isFavorite'] == true ? Icons.star_rounded : Icons.star_border_rounded,
+                color: widget.chatData['isFavorite'] == true ? const Color(0xFFFFB703) : null,
               ),
             ),
           if (_exchanges.isNotEmpty)
             IconButton(
-              tooltip: 'بدء محادثة جديدة',
+              tooltip: 'محادثة جديدة',
               onPressed: () => setState(() => _exchanges.clear()),
               icon: const Icon(Icons.refresh_rounded, size: 20),
-            ),
-          if (widget.onOpenSettings != null)
-            IconButton(
-              onPressed: widget.onOpenSettings,
-              icon: const Icon(Icons.settings_outlined),
             ),
         ],
       ),
@@ -1745,46 +1370,27 @@ class _ChatScreenState extends State<ChatScreen> {
                         const SizedBox(height: 16),
                         _aiBubble(widget.chatData, isDark),
                       ],
-                      ..._exchanges.map(
-                        (ex) => Padding(
-                          padding: const EdgeInsets.only(top: 20),
-                          child: Column(
-                            children: [
-                              _userBubble(ex['question']),
-                              const SizedBox(height: 16),
-                              _aiBubble(ex, isDark),
-                            ],
-                          ),
+                      ..._exchanges.map((ex) => Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Column(
+                          children: [
+                            _userBubble(ex['question']),
+                            const SizedBox(height: 16),
+                            _aiBubble(ex, isDark),
+                          ],
                         ),
-                      ),
+                      )),
                       if (_loading)
                         Padding(
                           padding: const EdgeInsets.all(18),
                           child: Container(
                             padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
                             child: const Row(
                               children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.2,
-                                    color: Color(0xFF0096C7),
-                                  ),
-                                ),
+                                SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: Color(0xFF0096C7))),
                                 SizedBox(width: 12),
-                                Text(
-                                  'جاري تحليل السؤال الطبي وصياغة الإرشادات...',
-                                  style: TextStyle(
-                                    color: Color(0xFF0096C7),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                Text('جاري تحليل الحالة الطبية...', style: TextStyle(color: Color(0xFF0096C7), fontSize: 13, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -1800,30 +1406,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildWelcomeView(bool isDark) {
     final list = [
-      {
-        't': 'ما هي أعراض ارتفاع ضغط الدم؟',
-        'sub': 'القلب والأوعية',
-        'i': Icons.favorite_rounded,
-        'c': 0xFFE11D48,
-      },
-      {
-        't': 'كيف أقوي الجهاز المناعي طبيعياً؟',
-        'sub': 'المناعة والتغذية',
-        'i': Icons.shield_rounded,
-        'c': 0xFF10B981,
-      },
-      {
-        't': 'ما فائدة فيتامين D وما أعراض نقصه؟',
-        'sub': 'الفيتامينات',
-        'i': Icons.wb_sunny_rounded,
-        'c': 0xFFF59E0B,
-      },
-      {
-        't': 'ما أسباب الصداع المستمر والإرهاق؟',
-        'sub': 'الأعصاب',
-        'i': Icons.psychology_rounded,
-        'c': 0xFF0096C7,
-      },
+      {'t': 'ما هي أعراض ارتفاع ضغط الدم؟', 'sub': 'القلب', 'i': Icons.favorite_rounded, 'c': 0xFFE11D48},
+      {'t': 'كيف أقوي الجهاز المناعي؟', 'sub': 'المناعة', 'i': Icons.shield_rounded, 'c': 0xFF10B981},
+      {'t': 'ما فائدة فيتامين D؟', 'sub': 'الفيتامينات', 'i': Icons.wb_sunny_rounded, 'c': 0xFFF59E0B},
+      {'t': 'ما أسباب الصداع المستمر؟', 'sub': 'الأعصاب', 'i': Icons.psychology_rounded, 'c': 0xFF0096C7},
     ];
     return Center(
       child: SingleChildScrollView(
@@ -1832,20 +1418,9 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             const MediqLogo(size: 72, showText: false),
             const SizedBox(height: 16),
-            Text(
-              'كيف يمكنني مساعدتك صحياً اليوم؟',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : const Color(0xFF0A192F),
-              ),
-            ),
+            Text('كيف يمكنني مساعدتك طبياً اليوم؟', textAlign: TextAlign.center, style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF0A192F))),
             const SizedBox(height: 6),
-            const Text(
-              'اختر أحد الأسئلة الشائعة أو اكتب استشارتك بالأسفل',
-              style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
-            ),
+            const Text('اختر سؤالاً شائعاً أو اكتب استشارتك بالأسفل', style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B))),
             const SizedBox(height: 24),
             Wrap(
               spacing: 12,
@@ -1862,40 +1437,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                      ),
+                      border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: c.withOpacity(0.14),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(item['i'] as IconData, color: c, size: 20),
-                        ),
+                        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: c.withOpacity(0.14), borderRadius: BorderRadius.circular(10)), child: Icon(item['i'] as IconData, color: c, size: 20)),
                         const SizedBox(height: 10),
-                        Text(
-                          item['sub'] as String,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                            color: c,
-                          ),
-                        ),
+                        Text(item['sub'] as String, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: c)),
                         const SizedBox(height: 4),
-                        Text(
-                          item['t'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            height: 1.35,
-                            color: isDark ? Colors.white : const Color(0xFF0A192F),
-                          ),
-                        ),
+                        Text(item['t'] as String, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, height: 1.35, color: isDark ? Colors.white : const Color(0xFF0A192F))),
                       ],
                     ),
                   ),
@@ -1915,51 +1466,10 @@ class _ChatScreenState extends State<ChatScreen> {
         constraints: const BoxConstraints(maxWidth: 340),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0077B6), Color(0xFF023E8A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-            bottomLeft: Radius.circular(20),
-            bottomRight: Radius.circular(4),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0077B6).withOpacity(0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          gradient: const LinearGradient(colors: [Color(0xFF0077B6), Color(0xFF023E8A)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20), bottomLeft: Radius.circular(20), bottomRight: Radius.circular(4)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              txt,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.done_all_rounded, size: 14, color: Color(0xFF00E5FF)),
-                SizedBox(width: 4),
-                Text(
-                  'تم الإرسال',
-                  style: TextStyle(fontSize: 10, color: Colors.white70),
-                ),
-              ],
-            ),
-          ],
-        ),
+        child: Text(txt, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14, height: 1.45)),
       ),
     );
   }
@@ -1971,16 +1481,7 @@ class _ChatScreenState extends State<ChatScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1989,112 +1490,34 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               const MediqLogo(size: 28, showText: false),
               const SizedBox(width: 8),
-              Text(
-                'MEDIQ AI',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13.5,
-                  color: isDark ? Colors.white : const Color(0xFF0A192F),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0096C7).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  appController.selectedModel,
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    color: Color(0xFF0096C7),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              Text('MEDIQ AI PRO', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5, color: isDark ? Colors.white : const Color(0xFF0A192F))),
             ],
           ),
           const Divider(height: 22),
-          Text(
-            data['answerIntro'],
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.6,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
-            ),
-          ),
+          Text(data['answerIntro'], style: TextStyle(fontSize: 14, height: 1.6, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF1E293B))),
           const SizedBox(height: 12),
-          ...bullets.map(
-            (b) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.03)
-                    : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.check_circle_rounded,
-                    color: Color(0xFF0096C7),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      b,
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        height: 1.5,
-                        color: isDark
-                            ? Colors.white.withOpacity(0.88)
-                            : const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          ...bullets.map((b) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF0096C7), size: 18),
+                const SizedBox(width: 10),
+                Expanded(child: Text(b, style: TextStyle(fontSize: 13.5, height: 1.5, color: isDark ? Colors.white.withOpacity(0.88) : const Color(0xFF334155)))),
+              ],
             ),
-          ),
+          )),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFF59E0B).withOpacity(0.10),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFF59E0B).withOpacity(0.30),
-              ),
+              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.30)),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.gpp_maybe_rounded,
-                  color: Color(0xFFD97706),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    data['footer'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.5,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? const Color(0xFFFDE68A)
-                          : const Color(0xFF92400E),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: Text(data['footer'], style: TextStyle(fontSize: 12, height: 1.5, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E))),
           ),
           const SizedBox(height: 14),
           Wrap(
@@ -2102,37 +1525,11 @@ class _ChatScreenState extends State<ChatScreen> {
             runSpacing: 8,
             children: [
               _actionBtn(
-                icon: _reaction == 1
-                    ? Icons.thumb_up_alt_rounded
-                    : Icons.thumb_up_alt_outlined,
-                label: 'مفيد',
-                active: _reaction == 1,
-                onTap: () => setState(() => _reaction = _reaction == 1 ? 0 : 1),
-              ),
-              _actionBtn(
-                icon: _reaction == -1
-                    ? Icons.thumb_down_alt_rounded
-                    : Icons.thumb_down_alt_outlined,
-                active: _reaction == -1,
-                onTap: () =>
-                    setState(() => _reaction = _reaction == -1 ? 0 : -1),
-              ),
-              _actionBtn(
                 icon: Icons.copy_rounded,
                 label: 'نسخ التقرير',
                 onTap: () {
-                  Clipboard.setData(
-                    ClipboardData(
-                      text:
-                          '${data['answerIntro']}\n${bullets.join("\n")}\n${data['footer']}',
-                    ),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('تم نسخ الإجابة الطبية إلى الحافظة ✓'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  Clipboard.setData(ClipboardData(text: '${data['answerIntro']}\n${bullets.join("\n")}\n${data['footer']}'));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الإجابة الطبية ✓')));
                 },
               ),
             ],
@@ -2142,47 +1539,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _actionBtn({
-    required IconData icon,
-    String label = '',
-    bool active = false,
-    required VoidCallback onTap,
-  }) {
+  Widget _actionBtn({required IconData icon, String label = '', bool active = false, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: active
-              ? const Color(0xFF0077B6).withOpacity(0.15)
-              : Colors.grey.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: active ? const Color(0xFF0077B6) : Colors.transparent,
-          ),
-        ),
+        decoration: BoxDecoration(color: active ? const Color(0xFF0077B6).withOpacity(0.15) : Colors.grey.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: active ? const Color(0xFF0077B6) : const Color(0xFF64748B),
-            ),
-            if (label.isNotEmpty) ...[
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: active
-                      ? const Color(0xFF0077B6)
-                      : const Color(0xFF64748B),
-                ),
-              ),
-            ],
+            Icon(icon, size: 16, color: active ? const Color(0xFF0077B6) : const Color(0xFF64748B)),
+            if (label.isNotEmpty) ...[const SizedBox(width: 6), Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))],
           ],
         ),
       ),
@@ -2194,11 +1562,7 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-          ),
-        ),
+        border: Border(top: BorderSide(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0))),
       ),
       child: SafeArea(
         top: false,
@@ -2208,34 +1572,19 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF060F1E)
-                      : const Color(0xFFF2F6FC),
+                  color: isDark ? const Color(0xFF060F1E) : const Color(0xFFF2F6FC),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark ? Colors.white12 : const Color(0xFFDCE4F0),
-                  ),
+                  border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFDCE4F0)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.medical_services_outlined,
-                      color: Color(0xFF0096C7),
-                      size: 20,
-                    ),
+                    const Icon(Icons.medical_services_outlined, color: Color(0xFF0096C7), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: _ctrl,
                         onSubmitted: (_) => _send(),
-                        decoration: const InputDecoration(
-                          hintText: 'اكتب سؤالك أو الأعراض التي تشعر بها...',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13.5,
-                          ),
-                          border: InputBorder.none,
-                        ),
+                        decoration: const InputDecoration(hintText: 'اكتب سؤالك أو الأعراض الطبية...', border: InputBorder.none),
                       ),
                     ),
                   ],
@@ -2247,19 +1596,9 @@ class _ChatScreenState extends State<ChatScreen> {
               onTap: () => _send(),
               borderRadius: BorderRadius.circular(30),
               child: Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                width: 48, height: 48,
+                decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF00B4D8), Color(0xFF0077B6)]), shape: BoxShape.circle),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),
           ],
@@ -2269,57 +1608,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// ==========================================
-// شاشة الإعدادات (Settings Screen)
-// ==========================================
-
+// ================= SettingsScreen =================
 class SettingsScreen extends StatelessWidget {
   final bool embedded;
   const SettingsScreen({super.key, this.embedded = false});
-
-  void _showEditProfileDialog(BuildContext context) {
-    final nameCtrl = TextEditingController(text: appController.userName);
-    final handleCtrl = TextEditingController(text: appController.userHandle);
-    showDialog(
-      context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text(
-            'تعديل الملف الشخصي',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'الاسم'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: handleCtrl,
-                decoration: const InputDecoration(labelText: 'المعرف (@handle)'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                appController.updateUserProfile(nameCtrl.text, handleCtrl.text);
-                Navigator.pop(ctx);
-              },
-              child: const Text('حفظ'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -2331,158 +1623,42 @@ class SettingsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: !embedded,
-        title: Text(
-          'الإعدادات والتخصيص',
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0A192F),
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
-        ),
+        title: Text('الإعدادات والخصوصية الطبية', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0A192F), fontWeight: FontWeight.w900, fontSize: 18)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-              ),
-            ),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(20)),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Color(0xFF0077B6),
-                  child: Icon(Icons.person_rounded, color: Colors.white, size: 30),
-                ),
+                const CircleAvatar(radius: 26, backgroundColor: Color(0xFF0077B6), child: Icon(Icons.person_rounded, color: Colors.white, size: 28)),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        appController.userName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        appController.userHandle,
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 13,
-                        ),
-                      ),
+                      Text(appController.userName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      Text(appController.userHandle, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
                     ],
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: () => _showEditProfileDialog(context),
-                  icon: const Icon(Icons.edit_rounded, size: 16),
-                  label: const Text('تعديل'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 22),
-          const Text(
-            'المظهر والعرض',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          ),
-          const SizedBox(height: 10),
-          _switchTile(
-            context,
-            icon: isDark ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded,
-            title: 'الوضع الداكن المريح للعين',
-            subtitle: isDark ? 'مفعل حالياً' : 'الوضع الفاتح مفعل',
-            value: isDark,
-            onChanged: (_) => appController.toggleTheme(),
-          ),
-          _tile(
-            context,
-            Icons.text_fields_rounded,
-            'حجم الخط في التطبيق',
-            appController.fontSizeLabel,
-            appController.cycleFontSize,
-          ),
-          _tile(
-            context,
-            Icons.language_rounded,
-            'لغة الواجهة والمحادثة',
-            appController.language,
-            () {},
-          ),
           const SizedBox(height: 20),
-          const Text(
-            'الخصوصية والتنبيهات',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          ),
-          const SizedBox(height: 10),
-          _switchTile(
-            context,
-            icon: Icons.history_edu_rounded,
-            title: 'حفظ سجل الاستشارات تلقائياً',
-            subtitle: 'تخزين المحادثات محلياً على جهازك فقط',
-            value: appController.saveChats,
-            onChanged: (_) => appController.toggleSaveChats(),
-          ),
-          _switchTile(
-            context,
-            icon: Icons.notifications_active_outlined,
-            title: 'التنبيهات الصحية الذكية',
-            subtitle: 'تذكيرات دورية وإشعارات النظام',
-            value: appController.notificationsEnabled,
-            onChanged: (_) => appController.toggleNotifications(),
-          ),
+          _switchTile(context, icon: isDark ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded, title: 'الوضع الداكن المريح', value: isDark, onChanged: (_) => appController.toggleTheme()),
+          _tile(context, Icons.text_fields_rounded, 'حجم الخط', appController.fontSizeLabel, appController.cycleFontSize),
+          _tile(context, Icons.memory_rounded, 'النموذج الطبي النشط', appController.selectedModel, appController.cycleModel),
+          _tile(context, Icons.dns_rounded, 'حالة الخادم المحلي', appController.isLocalServerConnected ? 'متصل ●' : 'متوقف ○', appController.toggleServerStatus),
           const SizedBox(height: 20),
-          const Text(
-            'محرك الذكاء الاصطناعي المحلي',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          ),
-          const SizedBox(height: 10),
-          _tile(
-            context,
-            Icons.memory_rounded,
-            'النموذج الطبي النشط',
-            appController.selectedModel,
-            appController.cycleModel,
-          ),
-          _tile(
-            context,
-            Icons.dns_rounded,
-            'حالة الخادم المحلي',
-            appController.isLocalServerConnected ? 'متصل ●' : 'متوقف ○',
-            appController.toggleServerStatus,
-          ),
-          const SizedBox(height: 22),
           Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFE11D48).withOpacity(0.25),
-              ),
-            ),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
             child: ListTile(
-              onTap: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const SplashScreen()),
-              ),
+              onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SplashScreen())),
               leading: const Icon(Icons.restart_alt_rounded, color: Color(0xFFE11D48)),
-              title: const Text(
-                'إعادة تشغيل النظام الطبي',
-                style: TextStyle(
-                  color: Color(0xFFE11D48),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
+              title: const Text('إعادة تشغيل النظام', style: TextStyle(color: Color(0xFFE11D48), fontWeight: FontWeight.bold, fontSize: 14)),
             ),
           ),
         ],
@@ -2490,92 +1666,29 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _switchTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
+  Widget _switchTile(BuildContext context, {required IconData icon, required String title, required bool value, required ValueChanged<bool> onChanged}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: SwitchListTile.adaptive(
-        value: value,
-        onChanged: onChanged,
-        activeColor: const Color(0xFF0096C7),
-        secondary: Icon(icon, color: const Color(0xFF0077B6)),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-        ),
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
+      child: SwitchListTile.adaptive(value: value, onChanged: onChanged, activeColor: const Color(0xFF0096C7), secondary: Icon(icon, color: const Color(0xFF0077B6)), title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700))),
     );
   }
 
-  Widget _tile(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String trailing,
-    VoidCallback onTap,
-  ) {
+  Widget _tile(BuildContext context, IconData icon, String title, String trailing, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         onTap: onTap,
         leading: Icon(icon, color: const Color(0xFF0077B6), size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0077B6).withOpacity(0.10),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                trailing,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: Color(0xFF0077B6),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 6),
-              const Icon(
-                Icons.swap_horiz_rounded,
-                size: 15,
-                color: Color(0xFF0077B6),
-              ),
-            ],
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+        trailing: Text(trailing, style: const TextStyle(fontSize: 12.5, color: Color(0xFF0077B6), fontWeight: FontWeight.bold)),
       ),
     );
   }
 }
 
-// ==========================================
-// اللوحة الجانبية للمعلومات (Info Panel)
-// ==========================================
-
+// ================= InfoPanel =================
 class InfoPanel extends StatelessWidget {
   const InfoPanel({super.key});
 
@@ -2586,113 +1699,42 @@ class InfoPanel extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [const Color(0xFF102A45), const Color(0xFF0B1C30)]
-                  : [const Color(0xFFE0F2FE), const Color(0xFFF0F9FF)],
-            ),
+            gradient: LinearGradient(colors: isDark ? [const Color(0xFF102A45), const Color(0xFF0B1C30)] : [const Color(0xFFE0F2FE), const Color(0xFFF0F9FF)]),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
-            children: [
-              const Icon(
-                Icons.monitor_heart_rounded,
-                color: Color(0xFF0096C7),
-                size: 46,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'مساعدك الطبي الذكي',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : const Color(0xFF0A192F),
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'قراءة تحليلية مبنية على أحدث النماذج الطبية المحلية.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-              ),
+            children: const [
+              Icon(Icons.monitor_heart_rounded, color: Color(0xFF0096C7), size: 44),
+              SizedBox(height: 10),
+              Text('MEDIQ AI PRO', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+              SizedBox(height: 4),
+              Text('منصة الأطباء والطلاب والمريض', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _feat(Icons.medical_services_rounded, 'الحاسبات السريرية', 'GCS, BMI, الجرعات', isDark),
+        _feat(Icons.school_rounded, 'بوابة طلاب الطب', 'التخطيط والبطاقات السريرية', isDark),
+        _feat(Icons.wifi_off_rounded, 'يعمل بدون إنترنت', 'خصوصية ومعالجة تامة', isDark),
         const SizedBox(height: 20),
-        _feat(
-          Icons.verified_user_rounded,
-          'معطيات طبية منظمة',
-          'إرشادات مبنية على مراجع صحية',
-          isDark,
-        ),
-        _feat(
-          Icons.translate_rounded,
-          'دعم كامل للغة العربية',
-          'شرح واضح ومبسط للمصطلحات',
-          isDark,
-        ),
-        _feat(
-          Icons.wifi_off_rounded,
-          'يعمل محلياً 100%',
-          'استجابة فورية بدون اتصال بالإنترنت',
-          isDark,
-        ),
-        _feat(
-          Icons.lock_rounded,
-          'خصوصية وأمان تام',
-          'بياناتك الصحية تبقى داخل جهازك',
-          isDark,
-        ),
-        const SizedBox(height: 24),
-        const Center(
-          child: AnimatedEcgWave(
-            width: 180,
-            height: 34,
-            color: Color(0xFF0096C7),
-          ),
-        ),
+        const Center(child: AnimatedEcgWave(width: 170, height: 32, color: Color(0xFF0096C7))),
       ],
     );
   }
 
   Widget _feat(IconData icon, String title, String sub, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0096C7).withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: const Color(0xFF0096C7), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: isDark ? Colors.white : const Color(0xFF0A192F),
-                  ),
-                ),
-                Text(
-                  sub,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF0096C7).withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: const Color(0xFF0096C7), size: 18)),
+          const SizedBox(width: 10),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: isDark ? Colors.white : const Color(0xFF0A192F))),
+            Text(sub, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+          ])),
         ],
       ),
     );
