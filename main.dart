@@ -494,7 +494,7 @@ class _MainShellState extends State<MainShell> {
         ),
         child: NavigationBar(
           selectedIndex: _navIndex > 5 ? 0 : _navIndex,
-          onSelected: (i) => setState(() => _navIndex = i),
+          onDestinationSelected: (i) => setState(() => _navIndex = i),
           backgroundColor: Colors.transparent,
           elevation: 0,
           height: 68,
@@ -861,7 +861,7 @@ class ExploreScreen extends StatelessWidget {
   }
 }
 
-// ================= MedicalToolsScreen (Features 2, 6, 7, 13, 14, 15, 16, 17) =================
+// ================= MedicalToolsScreen =================
 class MedicalToolsScreen extends StatefulWidget {
   final bool embedded;
   const MedicalToolsScreen({super.key, this.embedded = false});
@@ -871,22 +871,18 @@ class MedicalToolsScreen extends StatefulWidget {
 }
 
 class _MedicalToolsScreenState extends State<MedicalToolsScreen> {
-  int _selectedTab = 0; // 0: BMI, 1: Vitals, 2: Lab, 3: Water, 4: Interactions
+  int _selectedTab = 0;
 
-  // BMI controllers
   final TextEditingController _weightCtrl = TextEditingController(text: '70');
   final TextEditingController _heightCtrl = TextEditingController(text: '175');
   String _bmiResult = '';
 
-  // Vitals controllers
   final TextEditingController _bpCtrl = TextEditingController(text: '120/80');
 
-  // Lab interpreter
   String _labType = 'السكر التراكمي (HbA1c)';
   final TextEditingController _labValCtrl = TextEditingController(text: '6.2');
   String _labResult = '';
 
-  // Water
   int _waterCups = 4;
 
   void _calcBmi() {
@@ -1115,7 +1111,7 @@ class _MedicalToolsScreenState extends State<MedicalToolsScreen> {
   }
 }
 
-// ================= MedicalStudentHubScreen (Features 18, 19, 20, 21, 22) =================
+// ================= MedicalStudentHubScreen =================
 class MedicalStudentHubScreen extends StatefulWidget {
   final bool embedded;
   const MedicalStudentHubScreen({super.key, this.embedded = false});
@@ -1125,9 +1121,8 @@ class MedicalStudentHubScreen extends StatefulWidget {
 }
 
 class _MedicalStudentHubScreenState extends State<MedicalStudentHubScreen> {
-  int _tab = 0; // 0: GCS, 1: Abbreviations, 2: ECG & XRay, 3: Flashcards
+  int _tab = 0;
 
-  // GCS calculator state
   int _gcsE = 4;
   int _gcsV = 5;
   int _gcsM = 6;
@@ -1278,7 +1273,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _ctrl = TextEditingController();
   final List<Map<String, dynamic>> _exchanges = [];
   bool _loading = false;
-  int _reaction = 0;
 
   @override
   void initState() {
@@ -1309,7 +1303,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasInitialBuiltInAnswer = widget.chatData['id'] != 'new' && (widget.chatData['question'] as String).isNotEmpty;
-    final isNew = !hasInitialBuiltInAnswer && _exchanges.isEmpty && !_loading;
+    final isNew = !hasInitialBuiltInAnswer && _exchanges.isNotEmpty && !_loading;
 
     return Scaffold(
       appBar: AppBar(
